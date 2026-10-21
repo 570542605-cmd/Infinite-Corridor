@@ -1,0 +1,3392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>代码运行结果</title>
+<style>
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>无尽长廊 · THE ENDLESS CORRIDOR</title>
+<style>
+html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; background: #000;
+    touch-action: none; -webkit-user-select: none; user-select: none;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+canvas { display: block; }
+#whiteout { position: fixed; inset: 0; background: #fff; z-index: 500; pointer-events: none; opacity: 0; }
+#redflash {
+    position: fixed; inset: 0;
+    background: radial-gradient(circle, transparent 40%, rgba(255,0,0,0.45) 100%);
+    z-index: 490; pointer-events: none; opacity: 0; transition: opacity 0.2s;
+}
+#main-menu {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    z-index: 100;
+    background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 100%);
+    transition: opacity 0.8s ease, visibility 0.8s;
+}
+#main-menu.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.title-container { text-align: center; margin-bottom: 60px; animation: title-breathe 5s infinite alternate ease-in-out; }
+@keyframes title-breathe {
+    0% { transform: scale(1); opacity: 0.9; }
+    100% { transform: scale(1.02); opacity: 1; filter: blur(0.5px); }
+}
+.title-main { font-size: 58px; font-weight: 900; color: #e0e0e0; letter-spacing: 14px; margin-right: -14px; text-shadow: 0 0 20px rgba(255,255,255,0.1); }
+.title-sub { font-size: 13px; color: #666; letter-spacing: 8px; margin-top: 12px; font-weight: 300; text-transform: uppercase; }
+.menu-buttons { display: flex; flex-direction: column; gap: 16px; width: 280px; }
+.menu-btn {
+    background: rgba(15, 15, 15, 0.65);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+    padding: 18px 0;
+    font-size: 18px; letter-spacing: 5px;
+    cursor: pointer; outline: none;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative; overflow: hidden; font-family: inherit;
+}
+.menu-btn:hover:not(:disabled), .menu-btn:active:not(:disabled) {
+    background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.6);
+    box-shadow: 0 0 20px rgba(255,255,255,0.1); letter-spacing: 7px;
+}
+.menu-btn:disabled { opacity: 0.25; cursor: not-allowed; border-color: rgba(255,255,255,0.05); text-shadow: none; }
+#game-ui { display: none; }
+#ui {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 150px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    padding: 0 24px 24px; box-sizing: border-box; pointer-events: none; z-index: 10;
+}
+.btn {
+    width: 100px; height: 100px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.55); font-size: 34px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: auto; -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.btn.pressed { background: rgba(255,255,255,0.35); color: #fff; }
+#btn-look {
+    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+    width: 84px; height: 84px; border-radius: 50%;
+    background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.55); font-size: 16px; font-weight: bold;
+    display: none; align-items: center; justify-content: center;
+    z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    user-select: none; touch-action: none; transition: all 0.15s;
+}
+#btn-look.active { background: rgba(255,255,255,0.35); color: #fff; }
+#btn-look.cooldown { background: rgba(255,255,255,0.02); border-color: rgba(255,255,255,0.10); color: rgba(255,255,255,0.28); }
+#btn-look.deny { border-color: rgba(255,90,90,0.85); color: rgba(255,90,90,0.95); }
+#btn-fire {
+    position: fixed; bottom: 150px; right: 24px;
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(255,0,0,0.10); border: 2px solid rgba(255,50,50,0.45);
+    color: rgba(255,100,100,0.85); font-size: 16px; font-weight: bold;
+    display: none; align-items: center; justify-content: center;
+    z-index: 10; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    user-select: none; touch-action: none;
+}
+#btn-fire:active { background: rgba(255,0,0,0.35); transform: scale(0.92); }
+#btn-pause {
+    position: fixed; top: 20px; right: 20px; width: 42px; height: 42px;
+    z-index: 50; background: rgba(0,0,0,0.5); border: 1px solid #555; color: #fff;
+    font-size: 18px; display: none; justify-content: center; align-items: center;
+    cursor: pointer; border-radius: 8px; -webkit-tap-highlight-color: transparent;
+}
+#crosshair {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 20px; height: 20px; z-index: 5; display: none; pointer-events: none;
+}
+#crosshair::before, #crosshair::after { content: ''; position: absolute; background: rgba(255,255,255,0.45); }
+#crosshair::before { width: 2px; height: 20px; left: 9px; }
+#crosshair::after { height: 2px; width: 20px; top: 9px; }
+#stamina-container {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    width: 180px; height: 4px; background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px; z-index: 20; pointer-events: none; overflow: hidden;
+}
+#stamina-fill { height: 100%; width: 100%; background: #ffffff; border-radius: 2px; transition: background-color 0.15s; }
+#threat-ui-container {
+    position: fixed; left: 12px; top: 42%; transform: translateY(-50%);
+    width: 14px; height: 180px; background: #110000;
+    border: 2px solid #441111;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.9), 0 0 5px rgba(255,0,0,0.1);
+    padding: 3px; box-sizing: border-box; z-index: 20;
+    opacity: 0; transition: opacity 0.5s; pointer-events: none;
+}
+#threat-bar-bg {
+    width: 100%; height: 100%; background: #1a0505;
+    position: relative; overflow: hidden; border: 1px solid #2a0808;
+}
+#threat-bar-fill {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 0%;
+    background: #8b0000; transition: height 0.1s linear, background-color 0.3s;
+    box-shadow: inset 0 0 8px rgba(255,0,0,0.4);
+}
+#threat-grid-overlay {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(to bottom, transparent, transparent 5px, rgba(0,0,0,0.7) 5px, rgba(0,0,0,0.7) 7px);
+    pointer-events: none;
+}
+.threat-label {
+    position: fixed; left: 32px; top: 42%; transform: translateY(-50%) rotate(180deg);
+    writing-mode: vertical-rl; color: #8b0000; font-size: 10px;
+    letter-spacing: 3px; font-weight: bold; text-shadow: 0 0 5px rgba(255,0,0,0.5);
+    z-index: 20; opacity: 0; transition: opacity 0.5s; pointer-events: none;
+}
+.danger #threat-bar-fill { background: #ff1111; animation: pulse-alert 0.3s infinite alternate; }
+.danger { border-color: #ff1111 !important; box-shadow: 0 0 15px rgba(255,0,0,0.6) !important; }
+@keyframes pulse-alert {
+    0% { opacity: 0.8; box-shadow: inset 0 0 10px rgba(255,255,255,0.5); }
+    100% { opacity: 1; box-shadow: inset 0 0 20px rgba(255,0,0,0.8); }
+}
+#inventory-container {
+    position: fixed; right: 12px; top: 42%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 8px; z-index: 20;
+    opacity: 0; transition: opacity 0.5s; pointer-events: none;
+}
+.inv-slot {
+    width: 46px; height: 46px;
+    background: #0a0a0a; border: 2px solid #333;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 0 0 5px rgba(0,0,0,0.5);
+    position: relative; cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+    transition: all 0.2s ease; box-sizing: border-box; pointer-events: auto;
+}
+.inv-slot::before, .inv-slot::after { content: ''; position: absolute; background: rgba(255,255,255,0.05); }
+.inv-slot::before { width: 14px; height: 1px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.inv-slot::after { width: 1px; height: 14px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.slot-num { position: absolute; top: 1px; left: 3px; font-size: 10px; color: #555; font-weight: bold; z-index: 3; }
+.inv-slot:hover { border-color: #666; background: #111; }
+.inv-slot.active { border-color: #ddd; background: #1a1a1a; box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 0 0 10px rgba(255,255,255,0.2); }
+.inv-slot.active .slot-num { color: #ddd; }
+.inv-slot.active-buff { border-color: #8b3fd6; box-shadow: 0 0 15px rgba(139,63,214,0.6); }
+.inv-icon { width: 24px; height: 24px; z-index: 2; }
+.icon-bullet { background: radial-gradient(circle, #a8862c 30%, #755a15 70%); border-radius: 4px; }
+.icon-potion { background: linear-gradient(to top, #8b3fd6 60%, #222 60%); border-radius: 6px; border-top: 2px solid #555; box-sizing: border-box; }
+.inv-count { position: absolute; bottom: 0px; right: 3px; font-size: 13px; color: #fff; font-weight: bold; text-shadow: 1px 1px 2px #000; z-index: 3; }
+.game-playing #threat-ui-container,
+.game-playing .threat-label,
+.game-playing #inventory-container { opacity: 1; pointer-events: auto; }
+#dialog {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 25vh; min-height: 150px;
+    background: rgba(0,0,0,0.55); border-top: 1px solid rgba(0,255,102,0.55);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    z-index: 150; padding: 14px 22px 18px; box-sizing: border-box;
+    display: none; font-family: "Courier New", "Consolas", "Menlo", monospace;
+    color: #00ff66; text-shadow: 0 0 8px rgba(0,255,102,0.45);
+}
+#dialog.show { display: block; }
+.dlg-name { font-size: 12px; letter-spacing: 3px; color: #00ff88; opacity: 0.8; margin-bottom: 6px; }
+.dlg-en { font-size: 17px; line-height: 1.5; min-height: 26px; color: #00ff66; word-break: break-word; }
+.dlg-en::before { content: "> "; color: #00aa44; }
+.dlg-cn { font-size: 13px; color: #3a8f5a; margin-top: 6px; min-height: 18px; opacity: 0; transition: opacity 0.4s ease; }
+.dlg-cn.show { opacity: 1; }
+.dlg-hint { position: absolute; right: 20px; bottom: 12px; font-size: 11px; color: #00ff66; opacity: 0; letter-spacing: 1px; }
+.dlg-hint.show { opacity: 1; animation: hintPulse 1.5s infinite; }
+@keyframes hintPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.cursor { display: inline-block; width: 8px; height: 1em; background: #00ff66; vertical-align: text-bottom; margin-left: 2px; animation: blink 0.8s infinite; }
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+.free-hint {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    color: rgba(200,200,200,0.65); font-family: monospace; font-size: 12px;
+    letter-spacing: 3px; z-index: 200; display: none; white-space: nowrap;
+}
+.free-hint.show { display: block; }
+#pause-menu {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: none; flex-direction: column; justify-content: center; align-items: center;
+    z-index: 300;
+}
+#pause-menu.show { display: flex; }
+.pause-title { color: #fff; font-size: 32px; letter-spacing: 8px; margin-bottom: 40px; }
+#toggle-debug {
+    position: fixed; top: 12px; left: 12px; z-index: 400;
+    background: rgba(0,0,0,0.72); border: 1px solid #3a3a3a; color: #0f0;
+    padding: 8px 12px; font-size: 14px; border-radius: 6px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent; font-family: monospace;
+}
+#debug-panel {
+    position: fixed; top: 54px; left: 12px; z-index: 390;
+    width: 280px; max-height: calc(100% - 76px); overflow-y: auto;
+    -webkit-overflow-scrolling: touch; background: rgba(0,0,0,0.92);
+    border: 1px solid #333; border-radius: 6px; padding: 10px 12px; box-sizing: border-box;
+    color: #0f0; font-size: 12px; display: none; backdrop-filter: blur(5px);
+    scrollbar-width: thin; scrollbar-color: #0f0 #111; font-family: monospace;
+}
+#debug-panel.open { display: block; }
+#debug-panel::-webkit-scrollbar { width: 6px; }
+#debug-panel::-webkit-scrollbar-track { background: #111; }
+#debug-panel::-webkit-scrollbar-thumb { background: #0f0; border-radius: 3px; }
+details { margin-bottom: 4px; border-bottom: 1px solid #1c1c1c; padding-bottom: 6px; }
+details:last-of-type { border-bottom: none; }
+summary { cursor: pointer; padding: 7px 2px; font-weight: bold; font-size: 13px; color: #0f0; outline: none; user-select: none; list-style: none; display: flex; align-items: center; }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: '▸'; display: inline-block; width: 14px; transition: transform 0.15s; }
+details[open] > summary::before { transform: rotate(90deg); }
+.control-group { margin-bottom: 9px; }
+.control-group label { display: flex; justify-content: space-between; margin-bottom: 3px; color: #9d9; }
+input[type=range] { width: 100%; accent-color: #0f0; height: 18px; }
+input[type=color] { width: 100%; height: 26px; border: 1px solid #333; border-radius: 4px; background: none; padding: 0; cursor: pointer; }
+.panel-btn { width: 100%; padding: 9px; margin-top: 8px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; box-sizing: border-box; font-family: monospace; }
+#btn-copy { background: #0f0; color: #000; border: none; }
+#btn-reset { background: transparent; color: #0f0; border: 1px solid #0f0; }
+#btn-menu-return { background: #333; color: #fff; border: none; margin-top: 15px; }
+.hint { color: #666; font-size: 11px; margin-top: 8px; line-height: 1.5; }
+#ending-hint {
+    position: fixed; bottom: 8%; left: 50%; transform: translateX(-50%);
+    color: rgba(220,220,220,0.9); font-family: monospace; font-size: 14px;
+    letter-spacing: 4px; z-index: 600; display: none; text-align: center;
+    animation: hintPulse 1.5s infinite;
+}
+#ending-hint.show { display: block; }
+</style>
+</head>
+<body>
+
+<div id="whiteout"></div>
+<div id="redflash"></div>
+
+<div id="main-menu">
+    <div class="title-container">
+        <div class="title-main">无尽长廊</div>
+        <div class="title-sub">THE ENDLESS CORRIDOR</div>
+    </div>
+    <div class="menu-buttons">
+        <button class="menu-btn" id="btn-new">新游戏</button>
+        <button class="menu-btn" id="btn-continue" disabled>继续游戏 (无存档)</button>
+        <button class="menu-btn" id="btn-settings">设 置</button>
+    </div>
+</div>
+
+<div id="game-ui">
+    <div id="crosshair"></div>
+    <div id="stamina-container"><div id="stamina-fill"></div></div>
+    <div id="ui">
+        <div class="btn" id="btn-s">S</div>
+        <div class="btn" id="btn-w">W</div>
+    </div>
+    <div id="btn-look">回头</div>
+</div>
+
+<div id="btn-fire">开火</div>
+<div id="btn-pause">⏸</div>
+
+<div id="threat-ui-container">
+    <div id="threat-bar-bg">
+        <div id="threat-bar-fill"></div>
+        <div id="threat-grid-overlay"></div>
+    </div>
+</div>
+<div class="threat-label">THREAT</div>
+
+<div id="inventory-container">
+    <div class="inv-slot active" data-index="1">
+        <span class="slot-num">1</span>
+        <div class="inv-icon icon-bullet"></div>
+        <span class="inv-count" id="count-bullet">0</span>
+    </div>
+    <div class="inv-slot" data-index="2">
+        <span class="slot-num">2</span>
+        <div class="inv-icon icon-potion"></div>
+        <span class="inv-count" id="count-potion">0</span>
+    </div>
+    <div class="inv-slot" data-index="3"><span class="slot-num">3</span></div>
+    <div class="inv-slot" data-index="4"><span class="slot-num">4</span></div>
+</div>
+
+<div id="dialog">
+    <div class="dlg-name">CINDY SCHREYER</div>
+    <div class="dlg-en" id="dlg-en"></div>
+    <div class="dlg-cn" id="dlg-cn"></div>
+    <div class="dlg-hint" id="dlg-hint">按下 F 继续 · 或点击画面</div>
+</div>
+
+<div class="free-hint" id="free-hint">W/S 移动 · Shift 奔跑 · Q 回头 · F 开火 · R 喝药</div>
+
+<div id="pause-menu">
+    <div class="pause-title">已 暂 停</div>
+    <div class="menu-buttons">
+        <button class="menu-btn" id="btn-resume">继续游戏</button>
+        <button class="menu-btn" id="btn-pause-return">回到主菜单</button>
+    </div>
+</div>
+
+<div id="toggle-debug">⚙️ 调参</div>
+<div id="debug-panel"></div>
+<div id="ending-hint">点击屏幕返回主菜单 · 或按 F</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script>
+(function () {
+'use strict';
+
+/* ================================================================
+   一、参数
+   ================================================================ */
+const DEG = Math.PI / 180;
+
+const DEFAULTS = {
+    lightIntensity: 1.70, lightDistance: 9.00, lightColor: '#bfd4ff', ambient: 0.28, ambientColor: '#8fa0b8',
+    fogDensity: 0.14, fogColor: '#050505',
+    wallBrightness: 170, wallTiling: 1.00, stainStrength: 0.65, grainStrength: 0.42, crackCount: 14,
+    brickRows: 7, brickCols: 5, brickGapDark: 0.55, toneWarm: 0.15, bumpScale: 0.06, roughness: 0.95,
+    corridorWidth: 2.40, ceilingHeight: 2.60, chunkLength: 11, debris: 8, ridges: 4,
+    speed: 2.50, shake: 0.04, eyeHeight: 0.90,
+    lookYawAngle: 150, lookPitchAngle: 5, lookSpeed: 6.00, lookHoldTime: 1.00, lookSlow: 0.18, lookCooldown: 4.00,
+    staminaMax: 120, runSpeedMul: 1.60, staminaCost: 20, staminaRecoverIdle: 15, staminaRecoverWalk: 10, staminaWarnThreshold: 30,
+    audioVolume: 0.3,
+    exposure: 1.00, contrast: 1.05, saturation: 1.00, vignette: 0.40, grain: 0.05, chroma: 0.00, blur: 0.00, scanline: 0.00,
+    weaponDamage: 1, maxBullet: 12, maxPotion: 2, muzzleFlashIntensity: 3,
+    startBullet: 3, startPotion: 1,
+    monsterHp: 4, monsterFrontSpeed: 1.50, monsterFrontChase: 3.20,
+    monsterBackSpeed: 3.50, monsterBackIdle: 1.50,
+    monsterSpawnMin: 15, monsterSpawnMax: 25, frontSpawnDelay: 40,
+    frontSpawnDist: 22, backSpawnDist: 20, spawnGrace: 1.2,
+    warnDist: 6, faceHugDamage: 30,
+    bulletChance: 0.32, potionChance: 0.22, threatDecay: 1
+};
+const CFG = Object.assign({}, DEFAULTS);
+
+const GROUPS = [
+{ title: '💡 光照', items: [
+    { key:'lightIntensity', label:'手电筒强度', min:0, max:6, step:0.1 },
+    { key:'lightDistance', label:'手电筒距离', min:0.5, max:40, step:0.5 },
+    { key:'lightColor', label:'手电筒颜色', type:'color' },
+    { key:'ambient', label:'环境光强度', min:0, max:1.5, step:0.05 },
+    { key:'ambientColor', label:'环境光颜色', type:'color' }
+]},
+{ title: '🌫 雾效', items: [
+    { key:'fogDensity', label:'雾浓度', min:0, max:0.4, step:0.005 },
+    { key:'fogColor', label:'雾 / 天色', type:'color' }
+]},
+{ title: '🧱 墙面质感', items: [
+    { key:'wallBrightness', label:'墙面亮度', min:20, max:255, step:1 },
+    { key:'wallTiling', label:'纹理密度', min:0.3, max:4, step:0.1 },
+    { key:'stainStrength', label:'污渍斑驳', min:0, max:1, step:0.01 },
+    { key:'grainStrength', label:'颗粒噪点', min:0, max:1, step:0.01 },
+    { key:'crackCount', label:'裂纹数量', min:0, max:40, step:1 },
+    { key:'brickRows', label:'砖块行数', min:2, max:16, step:1 },
+    { key:'brickCols', label:'砖块列数', min:2, max:12, step:1 },
+    { key:'brickGapDark', label:'砖缝深浅', min:0, max:1, step:0.01 },
+    { key:'toneWarm', label:'色调冷暖', min:-1, max:1, step:0.01 },
+    { key:'bumpScale', label:'凹凸强度', min:0, max:0.3, step:0.005 },
+    { key:'roughness', label:'粗糙度', min:0, max:1, step:0.01 }
+]},
+{ title: '🏗 走廊结构', items: [
+    { key:'corridorWidth', label:'走廊宽度', min:0.6, max:4, step:0.1 },
+    { key:'ceilingHeight', label:'天花板高度', min:1.8, max:6, step:0.1 },
+    { key:'chunkLength', label:'区块长度', min:4, max:30, step:1 },
+    { key:'ridges', label:'地面横条数', min:0, max:12, step:1 },
+    { key:'debris', label:'碎石数量', min:0, max:24, step:1 }
+]},
+{ title: '🚶 移动', items: [
+    { key:'speed', label:'移动速度', min:1, max:15, step:0.5 },
+    { key:'shake', label:'摇晃幅度', min:0, max:0.3, step:0.01 },
+    { key:'eyeHeight', label:'视角高度', min:0.2, max:2.5, step:0.05 }
+]},
+{ title: '👀 回头', items: [
+    { key:'lookYawAngle', label:'回头水平角(°)', min:-180, max:180, step:1 },
+    { key:'lookPitchAngle', label:'回头俯仰角(°)', min:-60, max:60, step:1 },
+    { key:'lookSpeed', label:'回头速度', min:1, max:20, step:0.5 },
+    { key:'lookHoldTime', label:'回头停留(s)', min:0, max:6, step:0.1 },
+    { key:'lookSlow', label:'回头时移速', min:0, max:1, step:0.01 },
+    { key:'lookCooldown', label:'冷却时间(s)', min:0, max:15, step:0.5 }
+]},
+{ title: '🏃 体力与奔跑', items: [
+    { key:'staminaMax', label:'体力上限', min:20, max:200, step:10 },
+    { key:'runSpeedMul', label:'奔跑速度倍率', min:1.1, max:3.0, step:0.1 },
+    { key:'staminaCost', label:'奔跑消耗(/s)', min:1, max:50, step:1 },
+    { key:'staminaRecoverIdle', label:'静止恢复(/s)', min:1, max:50, step:1 },
+    { key:'staminaRecoverWalk', label:'走路恢复(/s)', min:1, max:50, step:1 },
+    { key:'staminaWarnThreshold', label:'警告阈值(%)', min:0, max:100, step:5 }
+]},
+{ title: '🔫 武器', items: [
+    { key:'weaponDamage', label:'开火伤害', min:1, max:10, step:1 },
+    { key:'maxBullet', label:'弹药上限', min:1, max:99, step:1 },
+    { key:'maxPotion', label:'药水上限', min:1, max:9, step:1 },
+    { key:'startBullet', label:'初始弹药', min:0, max:20, step:1 },
+    { key:'startPotion', label:'初始药水', min:0, max:9, step:1 },
+    { key:'muzzleFlashIntensity', label:'枪口闪光', min:0, max:10, step:0.5 }
+]},
+{ title: '👹 怪物', items: [
+    { key:'monsterHp', label:'怪物血量', min:1, max:20, step:1 },
+    { key:'monsterFrontSpeed', label:'前怪基础速度', min:0.2, max:10, step:0.1 },
+    { key:'monsterFrontChase', label:'前怪追击速度', min:0.2, max:15, step:0.1 },
+    { key:'monsterBackSpeed', label:'后怪追击速度', min:0.2, max:15, step:0.1 },
+    { key:'monsterBackIdle', label:'后怪游荡速度', min:0.1, max:10, step:0.1 },
+    { key:'monsterSpawnMin', label:'刷新间隔下限(s)', min:2, max:60, step:1 },
+    { key:'monsterSpawnMax', label:'刷新间隔上限(s)', min:5, max:120, step:1 },
+    { key:'frontSpawnDelay', label:'前怪首次延迟(s)', min:0, max:300, step:5 },
+    { key:'frontSpawnDist', label:'前怪刷新距离(m)', min:10, max:40, step:0.5 },
+    { key:'backSpawnDist', label:'后怪刷新距离(m)', min:10, max:40, step:0.5 },
+    { key:'spawnGrace', label:'入场缓冲(s)', min:0, max:3, step:0.1 },
+    { key:'warnDist', label:'红屏警告距离(m)', min:1, max:20, step:0.5 },
+    { key:'faceHugDamage', label:'糊脸伤害', min:0, max:100, step:1 }
+]},
+{ title: '🎁 掉落 & 阈限', items: [
+    { key:'bulletChance', label:'子弹掉率', min:0, max:1, step:0.01 },
+    { key:'potionChance', label:'药水掉率', min:0, max:1, step:0.01 },
+    { key:'threatDecay', label:'阈限自然衰减(/5s)', min:0, max:20, step:0.5 }
+]},
+{ title: '🔊 音效', items: [ { key:'audioVolume', label:'环境音量', min:0, max:1, step:0.01 } ]},
+{ title: '🎞 后期处理', items: [
+    { key:'exposure', label:'曝光', min:0.1, max:3, step:0.05 },
+    { key:'contrast', label:'对比度', min:0.5, max:2, step:0.01 },
+    { key:'saturation', label:'饱和度', min:0, max:2, step:0.01 },
+    { key:'vignette', label:'暗角', min:0, max:1, step:0.01 },
+    { key:'grain', label:'噪点颗粒', min:0, max:0.3, step:0.005 },
+    { key:'chroma', label:'色差', min:0, max:0.01, step:0.0005 },
+    { key:'blur', label:'模糊', min:0, max:4, step:0.1 },
+    { key:'scanline', label:'扫描线', min:0, max:1, step:0.01 }
+]}
+];
+
+/* ================================================================
+   二、全局
+   ================================================================ */
+let scene, camera, renderer, maxAniso = 1;
+let roomGroup, phoneGroup, phoneScreenMat, phoneLight, matScreen, screenLight;
+let corridorGroup, chunks = new Map(), currentZ = 0;
+let playerLight, corridorAmbient;
+let rt, postScene, postCamera, postMat, postUniforms;
+let wallMat, floorMat, ceilMat, brickMat, debrisMat;
+let geoWall, geoFloor, geoBrick, geoDebris;
+let baseTexture = null;
+
+let gameState = 'menu';
+let introPhase = 'idle';
+let typingState = null, camAnim = null, actionState = null;
+let currentStep = 0, inCorridor = false;
+let walkTime = 0, lastTime = 0, clockTime = 0;
+
+let isMovingForward = false, isMovingBackward = false, isRunInput = false;
+let lookYaw = 0, lookPitch = 0, targetYaw = 0, targetPitch = 0, roll = 0;
+let lookPhase = 'idle', lookPhaseTimer = 0, lookJudged = false;
+const LOOK_SETTLE_EPS = 0.015;
+
+let stamina = 120, isExhausted = false, staminaFill = null;
+let savedStamina = 120, savedZ = 0, hasSave = false;
+let savedBullet = 0, savedPotion = 0, savedThreat = 0, savedShield = false;
+
+const threatContainer = document.getElementById('threat-ui-container');
+const threatFill = document.getElementById('threat-bar-fill');
+
+let audioCtx = null, masterGain = null, corridorGain = null;
+let audioTimer = null, roomAmbientStarted = false;
+
+let threatValue = 0;
+let bulletCount = 0, potionCount = 0, hasShield = false;
+let pistolGroup, pistolSlide, pistolLight, isFiring = false, fireTime = 0;
+let potionGroup, potionLiquid, isDrinking = false, drinkTime = 0;
+let camShake = 0;
+let frontMonster = null, backMonster = null;
+let frontSpawnTimer = 40, backSpawnTimer = 15, dropTimer = 15, potionDropTimer = 45, gamePlayTime = 0;
+let drops = [];
+const MAX_THREAT = 100;
+
+/* ================================================================
+   三、初始化
+   ================================================================ */
+function init() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(CFG.fogColor);
+    scene.fog = new THREE.FogExp2(CFG.fogColor, CFG.fogDensity);
+
+    camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.05, 220);
+    camera.rotation.order = 'YXZ';
+    scene.add(camera);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.toneMapping = THREE.NoToneMapping;
+    renderer.outputEncoding = THREE.LinearEncoding;
+    document.body.appendChild(renderer.domElement);
+
+    maxAniso = renderer.capabilities.getMaxAnisotropy();
+
+    corridorGroup = new THREE.Group();
+    corridorGroup.visible = true;
+    scene.add(corridorGroup);
+
+    buildRoom();
+    buildPhone();
+    initWeapons();
+    initCorridorMaterials();
+    initCorridorLights();
+    initPost();
+
+    stamina = CFG.staminaMax;
+    staminaFill = document.getElementById('stamina-fill');
+    updateStaminaUI();
+    updateThreatUI(0);
+    updateInventoryUI();
+
+    bindControls();
+    buildPanel();
+    bindPanelButtons();
+    bindMenuButtons();
+    bindInventory();
+    updateLookBtn();
+    updateContinueBtn();
+
+    Ending.init();
+
+    window.addEventListener('resize', onResize);
+
+    enterMenuState();
+
+    requestAnimationFrame(animate);
+}
+
+/* ================================================================
+   四、武器模型
+   ================================================================ */
+function initWeapons() {
+    pistolGroup = new THREE.Group();
+    pistolGroup.position.set(0.2, -0.2, -0.4);
+    pistolGroup.visible = false;
+    camera.add(pistolGroup);
+
+    const mat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.5, metalness: 0.6 });
+    const matDark = new THREE.MeshStandardMaterial({ color: 0x222222 });
+
+    pistolSlide = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.05, 0.04), mat);
+    pistolSlide.position.set(0, 0.04, 0);
+    pistolGroup.add(pistolSlide);
+
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.03, 0.038), matDark);
+    frame.position.set(0.02, 0, 0);
+    pistolGroup.add(frame);
+
+    const grip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.16, 0.038), mat);
+    grip.position.set(-0.05, -0.09, 0);
+    grip.rotation.z = -0.2;
+    pistolGroup.add(grip);
+
+    pistolLight = new THREE.PointLight(0xffaa00, 0, 5);
+    pistolLight.position.set(0.2, 0.04, 0);
+    pistolGroup.add(pistolLight);
+
+    potionGroup = new THREE.Group();
+    potionGroup.position.set(0, -0.5, -0.4);
+    potionGroup.visible = false;
+    camera.add(potionGroup);
+
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0xbcd4e6, transparent: true, opacity: 0.3 });
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.15, 16), glassMat);
+    potionGroup.add(body);
+
+    const liquidMat = new THREE.MeshStandardMaterial({ color: 0x8b3fd6, emissive: 0x4a1080 });
+    potionLiquid = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.1, 16), liquidMat);
+    potionLiquid.position.y = -0.02;
+    potionGroup.add(potionLiquid);
+}
+
+/* 修复：手枪受 setCombatVisible 控制；药水单独由 isDrinking 控制 */
+function setCombatVisible(v) {
+    if (pistolGroup) pistolGroup.visible = v;
+    if (potionGroup) potionGroup.visible = isDrinking ? true : false;
+}
+
+/* ================================================================
+   五、UI
+   ================================================================ */
+function updateThreatUI(percent) {
+    if (!threatFill) return;
+    percent = Math.max(0, Math.min(100, percent));
+    threatFill.style.height = percent + '%';
+    if (percent >= 70) {
+        threatContainer.classList.add('danger');
+        threatFill.style.background = 'rgb(255,' + Math.max(0, 100 - percent) + ',0)';
+    } else {
+        threatContainer.classList.remove('danger');
+        threatFill.style.background = '#8b0000';
+    }
+}
+
+function updateInventoryUI() {
+    const cb = document.getElementById('count-bullet');
+    const cp = document.getElementById('count-potion');
+    if (cb) cb.textContent = bulletCount;
+    if (cp) cp.textContent = potionCount;
+    const potSlot = document.querySelector('.inv-slot[data-index="2"]');
+    if (potSlot) {
+        if (hasShield) potSlot.classList.add('active-buff');
+        else potSlot.classList.remove('active-buff');
+    }
+}
+
+function bindInventory() {
+    const slots = document.querySelectorAll('.inv-slot');
+    slots.forEach(slot => {
+        slot.addEventListener('click', () => {
+            slots.forEach(s => s.classList.remove('active'));
+            slot.classList.add('active');
+            const idx = parseInt(slot.dataset.index);
+            if (idx === 2) triggerDrink();
+        });
+    });
+    window.addEventListener('keydown', (e) => {
+        if (gameState !== 'playing') return;
+        const num = parseInt(e.key);
+        if (num >= 1 && num <= 4) {
+            slots.forEach(s => s.classList.remove('active'));
+            const targetSlot = document.querySelector('.inv-slot[data-index="' + num + '"]');
+            if (targetSlot) targetSlot.classList.add('active');
+            if (num === 2) triggerDrink();
+        }
+    });
+}
+
+/* ================================================================
+   六、暗室
+   ================================================================ */
+function buildRoom() {
+    roomGroup = new THREE.Group();
+    roomGroup.visible = false;
+    scene.add(roomGroup);
+    roomGroup.add(new THREE.AmbientLight(0x222222, 0.08));
+
+    const tableTop = new THREE.Mesh(
+        new THREE.BoxGeometry(6.0, 0.12, 2.8),
+        new THREE.MeshStandardMaterial({ color: 0x1c1c1c, roughness: 0.8 })
+    );
+    tableTop.position.set(0, 0.8, 0);
+    roomGroup.add(tableTop);
+
+    const legGeo = new THREE.BoxGeometry(0.22, 1.4, 0.22);
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x141414 });
+    [[-2.8,0.7,-1.2],[2.8,0.7,-1.2],[-2.8,0.7,1.2],[2.8,0.7,1.2]].forEach(p => {
+        const l = new THREE.Mesh(legGeo, legMat);
+        l.position.set(p[0], p[1], p[2]);
+        roomGroup.add(l);
+    });
+
+    const pcBase = new THREE.Mesh(
+        new THREE.BoxGeometry(1.4, 0.25, 0.6),
+        new THREE.MeshStandardMaterial({ color: 0x282828, roughness: 0.85 })
+    );
+    pcBase.position.set(0, 0.92, 0);
+    roomGroup.add(pcBase);
+
+    const stand = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.7, 0.12),
+        new THREE.MeshStandardMaterial({ color: 0x222222 })
+    );
+    stand.position.set(0, 1.27, 0.22);
+    roomGroup.add(stand);
+
+    const screenFrame = new THREE.Mesh(
+        new THREE.BoxGeometry(1.3, 0.85, 0.08),
+        new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7 })
+    );
+    screenFrame.position.set(0, 1.47, 0.48);
+    roomGroup.add(screenFrame);
+
+    matScreen = new THREE.MeshStandardMaterial({
+        color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.8
+    });
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.72), matScreen);
+    screen.position.set(0, 1.47, 0.53);
+    roomGroup.add(screen);
+
+    screenLight = new THREE.PointLight(0xffffff, 1.2, 8);
+    screenLight.position.set(0, 1.47, 0.7);
+    roomGroup.add(screenLight);
+
+    function spawnDevice(x, z, onTable) {
+        const sx = 0.2 + Math.random() * 0.8;
+        const sy = 0.3 + Math.random() * 1.0;
+        const sz = 0.2 + Math.random() * 0.7;
+        const mesh = new THREE.Mesh(
+            new THREE.BoxGeometry(sx, sy, sz),
+            new THREE.MeshStandardMaterial({ color: 0x2a2a2a, roughness: 0.75, metalness: 0.1 })
+        );
+        if (onTable) mesh.position.set(x, 0.92 + sy * 0.5, z);
+        else mesh.position.set(x, sy * 0.5, z);
+        mesh.rotation.y = Math.random() * 0.4 - 0.2;
+        roomGroup.add(mesh);
+    }
+    spawnDevice(-2.0, 0.6, true);
+    spawnDevice(-1.4, -0.4, true);
+    spawnDevice(1.9, 0.4, true);
+    spawnDevice(1.3, -0.5, true);
+    spawnDevice(-3.0, -1.5, false);
+    spawnDevice(-2.7, 1.0, false);
+    spawnDevice(3.1, -1.3, false);
+    spawnDevice(2.6, 0.9, false);
+
+    const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(40, 40),
+        new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.9 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    roomGroup.add(floor);
+}
+
+function buildPhone() {
+    phoneGroup = new THREE.Group();
+    phoneGroup.position.set(-0.09, -0.31, -0.39);
+    phoneGroup.rotation.x = -0.2;
+    camera.add(phoneGroup);
+
+    const phoneBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.085, 0.165, 0.014),
+        new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.5, metalness: 0.3 })
+    );
+    phoneGroup.add(phoneBody);
+
+    phoneScreenMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const phoneScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.072, 0.148), phoneScreenMat);
+    phoneScreen.position.z = 0.008;
+    phoneGroup.add(phoneScreen);
+
+    phoneLight = new THREE.PointLight(0xffffff, 0.6, 1.2, 2);
+    phoneLight.position.set(0, 0, 0.15);
+    phoneGroup.add(phoneLight);
+}
+
+/* ================================================================
+   七、程序化纹理
+   ================================================================ */
+function makeWallTextureCanvas() {
+    const S = 512;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = S;
+    const ctx = cv.getContext('2d');
+    const TAU = Math.PI * 2;
+    const warm = CFG.toneWarm;
+    const br = 138 + warm * 32, bg = 132 + warm * 4, bb = 118 - warm * 32;
+    ctx.fillStyle = 'rgb(' + (br|0) + ',' + (bg|0) + ',' + (bb|0) + ')';
+    ctx.fillRect(0, 0, S, S);
+
+    const stain = CFG.stainStrength;
+    if (stain > 0.001) {
+        const blobs = 150;
+        const drawBlob = function (px, py, r, fill) {
+            const g = ctx.createRadialGradient(px, py, 0, px, py, r);
+            g.addColorStop(0, fill); g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, r, 0, TAU); ctx.fill();
+        };
+        for (let i = 0; i < blobs; i++) {
+            const x = Math.random() * S, y = Math.random() * S, r = 14 + Math.random() * 95;
+            const dark = Math.random() < 0.66;
+            const a = (0.015 + Math.random() * 0.075) * stain;
+            const fill = dark ? 'rgba(34,30,24,' + a + ')' : 'rgba(168,162,144,' + (a * 0.75) + ')';
+            drawBlob(x, y, r, fill);
+            if (x < r) drawBlob(x + S, y, r, fill);
+            if (x > S - r) drawBlob(x - S, y, r, fill);
+            if (y < r) drawBlob(x, y + S, r, fill);
+            if (y > S - r) drawBlob(x, y - S, r, fill);
+        }
+    }
+
+    const rows = Math.max(2, Math.round(CFG.brickRows)), cols = Math.max(2, Math.round(CFG.brickCols));
+    const rowH = S / rows, gapDark = CFG.brickGapDark;
+    ctx.strokeStyle = 'rgba(28,25,21,' + (0.4 * gapDark) + ')'; ctx.lineWidth = 2.5;
+    for (let i = 0; i <= rows; i++) { ctx.beginPath(); ctx.moveTo(0, i * rowH); ctx.lineTo(S, i * rowH); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(28,25,21,' + (0.32 * gapDark) + ')'; ctx.lineWidth = 2;
+    for (let r = 0; r < rows; r++) {
+        const offset = (r % 2) * (S / cols / 2);
+        for (let c = 0; c <= cols; c++) {
+            const x = (c * S / cols + offset) % S;
+            ctx.beginPath(); ctx.moveTo(x, r * rowH + 1); ctx.lineTo(x, (r + 1) * rowH - 1); ctx.stroke();
+        }
+    }
+    ctx.strokeStyle = 'rgba(205,198,178,0.09)'; ctx.lineWidth = 1;
+    for (let i = 1; i < rows; i++) { ctx.beginPath(); ctx.moveTo(0, i * rowH + 2); ctx.lineTo(S, i * rowH + 2); ctx.stroke(); }
+
+    const cracks = Math.round(CFG.crackCount);
+    if (cracks > 0) {
+        ctx.strokeStyle = 'rgba(22,19,16,0.38)'; ctx.lineWidth = 1;
+        for (let i = 0; i < cracks; i++) {
+            let x = Math.random() * S, y = Math.random() * S, ang = Math.random() * TAU;
+            ctx.beginPath(); ctx.moveTo(x, y);
+            const segs = 4 + Math.floor(Math.random() * 8);
+            for (let s = 0; s < segs; s++) {
+                ang += (Math.random() - 0.5) * 1.3; const len = 4 + Math.random() * 15;
+                x += Math.cos(ang) * len; y += Math.sin(ang) * len; ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+    }
+
+    const grainAmt = CFG.grainStrength;
+    if (grainAmt > 0.005) {
+        const img = ctx.getImageData(0, 0, S, S), d = img.data, amt = grainAmt * 58;
+        for (let i = 0; i < d.length; i += 4) {
+            const n = (Math.random() - 0.5) * amt;
+            d[i] = Math.max(0, Math.min(255, d[i] + n));
+            d[i+1] = Math.max(0, Math.min(255, d[i+1] + n));
+            d[i+2] = Math.max(0, Math.min(255, d[i+2] + n));
+        }
+        ctx.putImageData(img, 0, 0);
+    }
+    return cv;
+}
+
+function rebuildTexture() {
+    if (baseTexture) baseTexture.dispose();
+    baseTexture = new THREE.CanvasTexture(makeWallTextureCanvas());
+    baseTexture.wrapS = baseTexture.wrapT = THREE.RepeatWrapping;
+    baseTexture.encoding = THREE.sRGBEncoding;
+    baseTexture.anisotropy = maxAniso;
+    cloneTexTo(wallMat); cloneTexTo(floorMat); cloneTexTo(ceilMat);
+    applyTiling();
+}
+function cloneTexTo(mat) {
+    const t = baseTexture.clone();
+    t.needsUpdate = true; t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.encoding = THREE.sRGBEncoding; t.anisotropy = maxAniso;
+    if (mat.map && mat.map !== t) mat.map.dispose();
+    mat.map = t; mat.bumpMap = t; mat.needsUpdate = true;
+}
+function applyTiling() {
+    const t = CFG.wallTiling;
+    setRepeat(wallMat, CFG.chunkLength / 2 * t, CFG.ceilingHeight / 2 * t);
+    setRepeat(ceilMat, CFG.chunkLength / 2 * t, CFG.ceilingHeight / 2 * t);
+    setRepeat(floorMat, CFG.corridorWidth / 2 * t, CFG.chunkLength / 2 * t);
+}
+function setRepeat(mat, rx, ry) { if (mat.map) mat.map.repeat.set(rx, ry); }
+function applyWallBrightness(v) {
+    const c = Math.max(0, Math.min(1, v / 255));
+    wallMat.color.setRGB(c, c, c); ceilMat.color.setRGB(c, c, c);
+    floorMat.color.setRGB(c * 0.78, c * 0.78, c * 0.78);
+}
+let texTimer = null;
+function requestTextureRebuild() {
+    if (texTimer) return;
+    texTimer = setTimeout(() => { texTimer = null; rebuildTexture(); }, 140);
+}
+
+/* ================================================================
+   八、走廊材质 / 灯光
+   ================================================================ */
+function initCorridorMaterials() {
+    geoWall  = new THREE.BoxGeometry(0.2, CFG.ceilingHeight, CFG.chunkLength);
+    geoFloor = new THREE.BoxGeometry(CFG.corridorWidth, 0.2, CFG.chunkLength);
+    geoBrick = new THREE.BoxGeometry(CFG.corridorWidth, 0.1, 0.4);
+    geoDebris = new THREE.BoxGeometry(1, 1, 1);
+
+    wallMat   = new THREE.MeshStandardMaterial({ roughness: CFG.roughness, metalness: 0.0, bumpScale: CFG.bumpScale });
+    floorMat  = new THREE.MeshStandardMaterial({ roughness: CFG.roughness, metalness: 0.0, bumpScale: CFG.bumpScale });
+    ceilMat   = new THREE.MeshStandardMaterial({ roughness: CFG.roughness, metalness: 0.0, bumpScale: CFG.bumpScale });
+    brickMat  = new THREE.MeshStandardMaterial({ color: 0x2a2620, roughness: 1.0 });
+    debrisMat = new THREE.MeshStandardMaterial({ color: 0x39332a, roughness: 1.0 });
+
+    applyWallBrightness(CFG.wallBrightness);
+    rebuildTexture();
+}
+
+function initCorridorLights() {
+    playerLight = new THREE.PointLight(CFG.lightColor, CFG.lightIntensity, CFG.lightDistance, 1);
+    playerLight.position.set(0, 0, 0);
+    playerLight.visible = false;
+    camera.add(playerLight);
+
+    corridorAmbient = new THREE.AmbientLight(CFG.ambientColor, CFG.ambient);
+    corridorAmbient.visible = false;
+    scene.add(corridorAmbient);
+}
+
+/* ================================================================
+   九、区块
+   ================================================================ */
+function createChunk(index) {
+    const g = new THREE.Group();
+    const L = CFG.chunkLength, W = CFG.corridorWidth, H = CFG.ceilingHeight, halfZ = -L / 2;
+
+    const leftWall = new THREE.Mesh(geoWall, wallMat); leftWall.position.set(-W / 2, H / 2, halfZ); g.add(leftWall);
+    const rightWall = new THREE.Mesh(geoWall, wallMat); rightWall.position.set(W / 2, H / 2, halfZ); g.add(rightWall);
+    const floor = new THREE.Mesh(geoFloor, floorMat); floor.position.set(0, 0, halfZ); g.add(floor);
+    const ceil = new THREE.Mesh(geoFloor, ceilMat); ceil.position.set(0, H, halfZ); g.add(ceil);
+
+    const ridges = Math.round(CFG.ridges);
+    if (ridges > 0) {
+        for (let i = 0; i < ridges; i++) {
+            const r = new THREE.Mesh(geoBrick, brickMat);
+            r.position.set(0, 0.15, -(i + 0.5) * (L / ridges)); g.add(r);
+        }
+    }
+    const debris = Math.round(CFG.debris);
+    if (debris > 0) {
+        for (let i = 0; i < debris; i++) {
+            const m = new THREE.Mesh(geoDebris, debrisMat);
+            const s = 0.02 + Math.random() * 0.07;
+            m.scale.set(s, s * (0.5 + Math.random() * 0.8), s);
+            m.position.set((Math.random() - 0.5) * (W - 0.28), 0.1 + s * 0.4, -Math.random() * L);
+            m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            g.add(m);
+        }
+    }
+    g.position.z = -index * L;
+    corridorGroup.add(g);
+    return g;
+}
+function updateChunks() {
+    const cur = Math.floor(-currentZ / CFG.chunkLength), R = 4;
+    for (let i = cur - R; i <= cur + R; i++) { if (!chunks.has(i)) chunks.set(i, createChunk(i)); }
+    chunks.forEach((group, i) => {
+        if (i < cur - R - 1 || i > cur + R + 1) { corridorGroup.remove(group); chunks.delete(i); }
+    });
+}
+function clearAllChunks() { chunks.forEach(g => corridorGroup.remove(g)); chunks.clear(); }
+function rebuildChunks() { clearAllChunks(); updateChunks(); }
+function rebuildGeometry() {
+    if (geoWall) geoWall.dispose();
+    if (geoFloor) geoFloor.dispose();
+    if (geoBrick) geoBrick.dispose();
+    geoWall = new THREE.BoxGeometry(0.2, CFG.ceilingHeight, CFG.chunkLength);
+    geoFloor = new THREE.BoxGeometry(CFG.corridorWidth, 0.2, CFG.chunkLength);
+    geoBrick = new THREE.BoxGeometry(CFG.corridorWidth, 0.1, 0.4);
+    applyTiling(); rebuildChunks();
+}
+
+/* ================================================================
+   十、后期
+   ================================================================ */
+const POST_VERT = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position, 1.0); }';
+const POST_FRAG = `
+precision highp float; varying vec2 vUv;
+uniform sampler2D tDiffuse;
+uniform vec2 uResolution;
+uniform float uExposure, uContrast, uSaturation, uVignette;
+uniform float uGrain, uChroma, uBlur, uScanline, uCurve;
+uniform float uBlink, uFade, uTime;
+vec3 aces(vec3 x){ float a=2.51,b=0.03,c=2.43,d=0.59,e=0.14; return clamp((x*(a*x+b))/(x*(c*x+d)+e),0.0,1.0); }
+float hash21(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+vec3 sampleAt(vec2 uv){
+    float ca = uChroma * (0.35 + length(uv-0.5));
+    vec3 c;
+    c.r = texture2D(tDiffuse, uv + vec2(ca, 0.0)).r;
+    c.g = texture2D(tDiffuse, uv).g;
+    c.b = texture2D(tDiffuse, uv - vec2(ca, 0.0)).b;
+    return c;
+}
+void main(){
+    vec2 cc = vUv - 0.5;
+    float r2 = dot(cc, cc);
+    vec2 uv = 0.5 + cc * (1.0 + uCurve * r2);
+    vec2 texel = 1.0 / uResolution;
+    vec3 col;
+    if (uBlur < 0.02) { col = sampleAt(uv); }
+    else {
+        col = vec3(0.0); float total = 0.0;
+        for (int i = -1; i <= 1; i++){
+            for (int j = -1; j <= 1; j++){
+                float fi = float(i), fj = float(j);
+                vec2 off = vec2(fi, fj) * texel * uBlur;
+                float w = (i==0 && j==0) ? 4.0 : ((abs(fi)+abs(fj)==1.0) ? 2.0 : 1.0);
+                col += sampleAt(uv + off) * w; total += w;
+            }
+        }
+        col /= total;
+    }
+    col *= uExposure;
+    col = aces(col);
+    col = (col - 0.5) * uContrast + 0.5;
+    float luma = dot(col, vec3(0.299,0.587,0.114));
+    col = mix(vec3(luma), col, uSaturation);
+    float s = sin(uv.y * uResolution.y * 0.45) * 0.5 + 0.5;
+    col *= 1.0 - uScanline * s * 0.30;
+    vec2 d = uv - 0.5;
+    float vig = 1.0 - dot(d, d) * uVignette * 2.8;
+    col *= clamp(vig, 0.0, 1.0);
+    float n = hash21(uv * uResolution + fract(uTime) * 137.0);
+    col += (n - 0.5) * uGrain;
+    vec2 ed = min(uv, 1.0 - uv);
+    col *= smoothstep(0.0, 0.012, min(ed.x, ed.y));
+    float bot = mix(-0.06, 0.53, uBlink);
+    float top = mix( 1.06, 0.49, uBlink);
+    float lid = smoothstep(bot - 0.035, bot + 0.035, vUv.y)
+              * (1.0 - smoothstep(top - 0.035, top + 0.035, vUv.y));
+    col *= lid;
+    col *= uFade;
+    col = pow(max(col, 0.0), vec3(1.0/2.2));
+    gl_FragColor = vec4(col, 1.0);
+}`;
+
+function initPost() {
+    const w = window.innerWidth, h = window.innerHeight;
+    const rtType = renderer.capabilities.isWebGL2 ? THREE.HalfFloatType : THREE.UnsignedByteType;
+    rt = new THREE.WebGLRenderTarget(w, h, {
+        minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+        format: THREE.RGBAFormat, type: rtType, depthBuffer: true, stencilBuffer: false
+    });
+    postUniforms = {
+        tDiffuse: { value: null }, uResolution: { value: new THREE.Vector2(w, h) },
+        uExposure: { value: CFG.exposure }, uContrast: { value: CFG.contrast }, uSaturation: { value: CFG.saturation },
+        uVignette: { value: CFG.vignette }, uGrain: { value: CFG.grain }, uChroma: { value: CFG.chroma },
+        uBlur: { value: CFG.blur }, uScanline: { value: CFG.scanline }, uTime: { value: 0 },
+        uCurve: { value: 0.0 }, uBlink: { value: 0.0 }, uFade: { value: 1.0 }
+    };
+    postMat = new THREE.ShaderMaterial({
+        uniforms: postUniforms, vertexShader: POST_VERT, fragmentShader: POST_FRAG,
+        depthTest: false, depthWrite: false
+    });
+    postScene = new THREE.Scene();
+    postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMat));
+}
+const POST_MAP = { exposure:'uExposure', contrast:'uContrast', saturation:'uSaturation', vignette:'uVignette', grain:'uGrain', chroma:'uChroma', blur:'uBlur', scanline:'uScanline' };
+
+/* ================================================================
+   十一、参数分发
+   ================================================================ */
+function onParamChange(key, v) {
+    switch (key) {
+        case 'lightIntensity': playerLight.intensity = v; break;
+        case 'lightDistance': playerLight.distance = v; break;
+        case 'lightColor': playerLight.color.set(v); break;
+        case 'ambient': corridorAmbient.intensity = v; break;
+        case 'ambientColor': corridorAmbient.color.set(v); break;
+        case 'fogDensity': scene.fog.density = v; break;
+        case 'fogColor': scene.fog.color.set(v); scene.background.set(v); break;
+        case 'wallBrightness': applyWallBrightness(v); break;
+        case 'wallTiling': applyTiling(); break;
+        case 'bumpScale': wallMat.bumpScale = v; floorMat.bumpScale = v; ceilMat.bumpScale = v; break;
+        case 'roughness': wallMat.roughness = v; floorMat.roughness = v; ceilMat.roughness = v; break;
+        case 'stainStrength': case 'grainStrength': case 'crackCount':
+        case 'brickRows': case 'brickCols': case 'brickGapDark': case 'toneWarm':
+            requestTextureRebuild(); break;
+        case 'corridorWidth': case 'ceilingHeight': case 'chunkLength': rebuildGeometry(); break;
+        case 'ridges': case 'debris': rebuildChunks(); break;
+        case 'lookYawAngle': case 'lookPitchAngle':
+            if (lookPhase === 'back' || lookPhase === 'hold') {
+                targetYaw = CFG.lookYawAngle * DEG; targetPitch = CFG.lookPitchAngle * DEG;
+                lookPhase = 'back'; lookPhaseTimer = 0; updateLookBtn();
+            } break;
+        case 'lookSpeed': case 'lookHoldTime': case 'lookSlow': case 'lookCooldown': updateLookBtn(); break;
+        case 'staminaMax':
+            if (stamina > v) stamina = v;
+            savedStamina = stamina; updateStaminaUI(); break;
+        case 'staminaWarnThreshold': updateStaminaUI(); break;
+        case 'audioVolume': if (masterGain && audioCtx) masterGain.gain.setTargetAtTime(v, audioCtx.currentTime, 0.1); break;
+        default: if (POST_MAP[key]) postUniforms[POST_MAP[key]].value = v; break;
+    }
+}
+
+/* ================================================================
+   十二、回头 / 体力
+   ================================================================ */
+function isLookBusy() { return lookPhase === 'back' || lookPhase === 'hold' || lookPhase === 'forward'; }
+function getLookSpeedMul() { return isLookBusy() ? CFG.lookSlow : 1; }
+
+function startLookBack() {
+    if (lookPhase !== 'idle') return false;
+    lookPhase = 'back'; lookPhaseTimer = 0; lookJudged = false;
+    targetYaw = CFG.lookYawAngle * DEG; targetPitch = CFG.lookPitchAngle * DEG;
+    updateLookBtn(); return true;
+}
+
+function updateLookState(dt) {
+    if (lookPhase === 'idle') return;
+    const settled = Math.abs(targetYaw - lookYaw) < LOOK_SETTLE_EPS && Math.abs(targetPitch - lookPitch) < LOOK_SETTLE_EPS;
+    if (lookPhase === 'back') {
+        if (settled) { lookPhase = 'hold'; lookPhaseTimer = 0; lookJudged = false; updateLookBtn(); }
+    } else if (lookPhase === 'hold') {
+        if (!lookJudged) {
+            lookJudged = true;
+            if (backMonster && backMonster.retreatTimer <= 0 && backMonster.spawnGrace <= 0) {
+                if (backMonster.dist <= 4 && backMonster.dist >= 1) {
+                    backMonster.retreatTimer = 2.0;
+                    backMonster.dist = 8;
+                    camShake = Math.max(camShake, 0.3);
+                } else if (backMonster.dist > 4 && backMonster.dist <= CFG.warnDist) {
+                    addThreat(2);
+                }
+            }
+        }
+        lookPhaseTimer += dt;
+        if (lookPhaseTimer >= CFG.lookHoldTime) {
+            targetYaw = 0; targetPitch = 0; lookPhase = 'forward'; lookPhaseTimer = 0; updateLookBtn();
+        }
+    } else if (lookPhase === 'forward') {
+        if (settled) { lookPhase = 'cooldown'; lookPhaseTimer = 0; updateLookBtn(); }
+    } else if (lookPhase === 'cooldown') {
+        lookPhaseTimer += dt;
+        if (lookPhaseTimer >= CFG.lookCooldown) { lookPhase = 'idle'; lookPhaseTimer = 0; }
+        updateLookBtn();
+    }
+}
+
+function updateLookBtn() {
+    const btn = document.getElementById('btn-look');
+    if (!btn) return;
+    let txt = '回头', active = false, cooling = false;
+    if (lookPhase === 'back' || lookPhase === 'hold') { txt = '回头中'; active = true; }
+    else if (lookPhase === 'forward') { txt = '回正'; active = true; }
+    else if (lookPhase === 'cooldown') { txt = '冷却 ' + Math.ceil(Math.max(0, CFG.lookCooldown - lookPhaseTimer)); cooling = true; }
+    if (btn.textContent !== txt) btn.textContent = txt;
+    btn.classList.toggle('active', active);
+    btn.classList.toggle('cooldown', cooling);
+}
+
+function updateStaminaUI() {
+    if (!staminaFill) return;
+    const pct = Math.max(0, Math.min(1, stamina / CFG.staminaMax));
+    staminaFill.style.width = (pct * 100) + '%';
+    staminaFill.style.backgroundColor = (isExhausted || pct * 100 < CFG.staminaWarnThreshold) ? '#ff3333' : '#ffffff';
+}
+
+/* ================================================================
+   十三、音频
+   ================================================================ */
+function initAudio() {
+    if (audioCtx) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    audioCtx = new AC();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = CFG.audioVolume;
+    masterGain.connect(audioCtx.destination);
+
+    corridorGain = audioCtx.createGain();
+    corridorGain.gain.value = 1.0;
+    corridorGain.connect(masterGain);
+
+    const osc1 = audioCtx.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = 40;
+    const gain1 = audioCtx.createGain(); gain1.gain.value = 0.06; osc1.connect(gain1); gain1.connect(corridorGain); osc1.start();
+    const osc2 = audioCtx.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = 44;
+    const gain2 = audioCtx.createGain(); gain2.gain.value = 0.06; osc2.connect(gain2); gain2.connect(corridorGain); osc2.start();
+
+    const bufferSize = audioCtx.sampleRate * 5;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0); let lastOut = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        output[i] = (lastOut + (0.02 * white)) / 1.02; lastOut = output[i]; output[i] *= 3.5;
+    }
+    const noiseSource = audioCtx.createBufferSource(); noiseSource.buffer = noiseBuffer; noiseSource.loop = true;
+    const noiseFilter = audioCtx.createBiquadFilter(); noiseFilter.type = 'lowpass'; noiseFilter.frequency.value = 250;
+    const noiseGain = audioCtx.createGain(); noiseGain.gain.value = 0.1;
+    noiseSource.connect(noiseFilter); noiseFilter.connect(noiseGain); noiseGain.connect(corridorGain); noiseSource.start();
+
+    const lfo = audioCtx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 0.08;
+    const lfoGain = audioCtx.createGain(); lfoGain.gain.value = 0.05;
+    lfo.connect(lfoGain); lfoGain.connect(noiseGain.gain); lfo.start();
+
+    audioTimer = setInterval(() => {
+        if (!audioCtx || audioCtx.state !== 'running' || Math.random() > 0.4) return;
+        const t = audioCtx.currentTime;
+        const pulseOsc = audioCtx.createOscillator(); pulseOsc.type = 'triangle';
+        pulseOsc.frequency.setValueAtTime(55, t); pulseOsc.frequency.exponentialRampToValueAtTime(25, t + 2);
+        const pulseGain = audioCtx.createGain();
+        pulseGain.gain.setValueAtTime(0, t); pulseGain.gain.linearRampToValueAtTime(0.2, t + 0.3); pulseGain.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
+        pulseOsc.connect(pulseGain); pulseGain.connect(corridorGain); pulseOsc.start(t); pulseOsc.stop(t + 3);
+    }, 8000);
+}
+function ensureAudio() {
+    if (!audioCtx) initAudio();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+/* 通用音效 */
+function playKeySound() {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    const dest = corridorGain || masterGain || audioCtx.destination;
+    const now = audioCtx.currentTime;
+    const buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.04), audioCtx.sampleRate);
+    const out = buf.getChannelData(0);
+    for (let i = 0; i < buf.length; i++) out[i] = Math.random() * 2 - 1;
+    const n1 = audioCtx.createBufferSource(); n1.buffer = buf;
+    const f1 = audioCtx.createBiquadFilter();
+    f1.type = 'bandpass'; f1.frequency.setValueAtTime(800 + Math.random() * 500, now); f1.Q.value = 1.0;
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.22, now); g1.gain.exponentialRampToValueAtTime(0.004, now + 0.04);
+    n1.connect(f1); f1.connect(g1); g1.connect(dest);
+    n1.start(now); n1.stop(now + 0.04);
+}
+function playGunSound() {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    const dest = corridorGain || masterGain || audioCtx.destination;
+    const now = audioCtx.currentTime;
+    const buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.18), audioCtx.sampleRate);
+    const out = buf.getChannelData(0);
+    for (let i = 0; i < buf.length; i++) {
+        out[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / buf.length, 3);
+    }
+    const src = audioCtx.createBufferSource(); src.buffer = buf;
+    const f = audioCtx.createBiquadFilter(); f.type = 'lowpass';
+    f.frequency.setValueAtTime(1800, now); f.frequency.exponentialRampToValueAtTime(180, now + 0.15);
+    const g = audioCtx.createGain(); g.gain.setValueAtTime(0.5, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    src.connect(f); f.connect(g); g.connect(dest);
+    src.start(now); src.stop(now + 0.18);
+}
+function playExplosionSound() {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    const dest = masterGain || audioCtx.destination;
+    const t = audioCtx.currentTime;
+    const bufSize = Math.floor(audioCtx.sampleRate * 2.0);
+    const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.2));
+    const noise = audioCtx.createBufferSource(); noise.buffer = buf;
+    const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1500, t); filter.frequency.exponentialRampToValueAtTime(60, t + 1.6);
+    const gain = audioCtx.createGain(); gain.gain.setValueAtTime(1.0, t); gain.gain.exponentialRampToValueAtTime(0.01, t + 2.0);
+    noise.connect(filter); filter.connect(gain); gain.connect(dest); noise.start(t);
+    const osc = audioCtx.createOscillator(); osc.type = 'sine';
+    osc.frequency.setValueAtTime(100, t); osc.frequency.exponentialRampToValueAtTime(30, t + 1.2);
+    const og = audioCtx.createGain(); og.gain.setValueAtTime(0.8, t); og.gain.exponentialRampToValueAtTime(0.001, t + 1.4);
+    osc.connect(og); og.connect(dest); osc.start(t); osc.stop(t + 1.5);
+}
+function playBreath() {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    const dest = masterGain || audioCtx.destination;
+    const t = audioCtx.currentTime;
+    const bufSize = Math.floor(audioCtx.sampleRate * 0.7);
+    const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+        const env = Math.sin(i / bufSize * Math.PI);
+        data[i] = (Math.random() * 2 - 1) * env;
+    }
+    const src = audioCtx.createBufferSource(); src.buffer = buf;
+    const filter = audioCtx.createBiquadFilter(); filter.type = 'bandpass';
+    filter.frequency.value = 700 + Math.random() * 400; filter.Q.value = 0.9;
+    const gain = audioCtx.createGain(); gain.gain.value = 0.08;
+    src.connect(filter); filter.connect(gain); gain.connect(dest); src.start(t);
+}
+function playFootstep() {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    const dest = masterGain || audioCtx.destination;
+    const t = audioCtx.currentTime;
+    const bufSize = Math.floor(audioCtx.sampleRate * 0.1);
+    const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.18));
+    const src = audioCtx.createBufferSource(); src.buffer = buf;
+    const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 200 + Math.random() * 150;
+    const gain = audioCtx.createGain(); gain.gain.value = 0.2;
+    src.connect(filter); filter.connect(gain); gain.connect(dest); src.start(t);
+}
+function playKnock(vol) {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    const dest = masterGain || audioCtx.destination;
+    const t = audioCtx.currentTime;
+    vol = vol || 1;
+    for (let i = 0; i < 2; i++) {
+        const delay = i * 0.28;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(85, t + delay);
+        osc.frequency.exponentialRampToValueAtTime(42, t + delay + 0.1);
+        g.gain.setValueAtTime(0, t + delay);
+        g.gain.linearRampToValueAtTime(0.55 * vol, t + delay + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.22);
+        osc.connect(g); g.connect(dest); osc.start(t + delay); osc.stop(t + delay + 0.26);
+        const len = Math.floor(audioCtx.sampleRate * 0.1);
+        const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let j = 0; j < len; j++) data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (len * 0.22));
+        const noise = audioCtx.createBufferSource(); noise.buffer = buf;
+        const bp = audioCtx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 380;
+        const ng = audioCtx.createGain(); ng.gain.value = 0.28 * vol;
+        noise.connect(bp); bp.connect(ng); ng.connect(dest); noise.start(t + delay);
+    }
+}
+function playDoorCreak() {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    const dest = masterGain || audioCtx.destination;
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(140, t);
+    osc.frequency.linearRampToValueAtTime(185, t + 1.6);
+    osc.frequency.linearRampToValueAtTime(115, t + 3.4);
+    const hp = audioCtx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 420;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.075, t + 0.6);
+    g.gain.linearRampToValueAtTime(0.075, t + 2.8);
+    g.gain.linearRampToValueAtTime(0, t + 3.5);
+    osc.connect(hp); hp.connect(g); g.connect(dest);
+    osc.start(t); osc.stop(t + 3.6);
+}
+function startRoomAmbient() {
+    if (!audioCtx || roomAmbientStarted) return;
+    roomAmbientStarted = true;
+    const dest = masterGain || audioCtx.destination;
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine'; osc.frequency.value = 42; gain.gain.value = 0.045;
+    osc.connect(gain); gain.connect(dest); osc.start(t);
+}
+
+/* ================================================================
+   十四、DOM
+   ================================================================ */
+const dialogEl = document.getElementById('dialog');
+const dlgEn = document.getElementById('dlg-en');
+const dlgCn = document.getElementById('dlg-cn');
+const dlgHint = document.getElementById('dlg-hint');
+const whiteout = document.getElementById('whiteout');
+const redflash = document.getElementById('redflash');
+const freeHint = document.getElementById('free-hint');
+const mainMenuEl = document.getElementById('main-menu');
+const gameUIEl = document.getElementById('game-ui');
+const btnLookEl = document.getElementById('btn-look');
+const btnFireEl = document.getElementById('btn-fire');
+const btnPauseEl = document.getElementById('btn-pause');
+const crosshairEl = document.getElementById('crosshair');
+
+/* ================================================================
+   十五、怪物
+   ================================================================ */
+function createMonster(isFront) {
+    const size = 256;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = size;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#080101';
+    ctx.shadowColor = '#660000';
+    ctx.shadowBlur = 10;
+    if (isFront) {
+        ctx.beginPath(); ctx.ellipse(128, 120, 20, 30, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(120, 120); ctx.lineTo(50, 180); ctx.lineTo(20, 220); ctx.lineTo(30, 230); ctx.lineTo(70, 190); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(136, 120); ctx.lineTo(206, 180); ctx.lineTo(236, 220); ctx.lineTo(226, 230); ctx.lineTo(186, 190); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(120, 140); ctx.lineTo(40, 250); ctx.lineTo(30, 256); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(136, 140); ctx.lineTo(216, 250); ctx.lineTo(226, 256); ctx.fill();
+    } else {
+        ctx.beginPath(); ctx.ellipse(128, 60, 15, 25, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(120, 80); ctx.lineTo(136, 80); ctx.lineTo(140, 200); ctx.lineTo(116, 200); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(120, 80); ctx.lineTo(20, 50); ctx.lineTo(10, 70); ctx.lineTo(110, 100); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(136, 80); ctx.lineTo(236, 50); ctx.lineTo(246, 70); ctx.lineTo(146, 100); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(116, 150); ctx.lineTo(10, 180); ctx.lineTo(10, 200); ctx.lineTo(120, 170); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(140, 150); ctx.lineTo(246, 180); ctx.lineTo(246, 200); ctx.lineTo(136, 170); ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 1, depthWrite: false });
+    const sprite = new THREE.Sprite(mat);
+
+    if (isFront) {
+        sprite.scale.set(2.4, 2.4, 1);
+        const d0 = CFG.frontSpawnDist;
+        sprite.position.set(0, 1.2, currentZ - d0);
+        frontMonster = { mesh: sprite, dist: d0, hp: CFG.monsterHp, retreatTimer: 0, spawnGrace: CFG.spawnGrace };
+    } else {
+        sprite.scale.set(2.6, 2.6, 1);
+        const d0 = CFG.backSpawnDist;
+        sprite.position.set(0, 1.3, currentZ + d0);
+        backMonster = { mesh: sprite, dist: d0, hp: CFG.monsterHp, retreatTimer: 0, spawnGrace: CFG.spawnGrace };
+    }
+    scene.add(sprite);
+}
+
+function updateMonsters(dt) {
+    if (frontMonster) {
+        const m = frontMonster;
+        if (m.spawnGrace > 0) {
+            m.spawnGrace -= dt;
+        } else if (m.retreatTimer > 0) {
+            m.retreatTimer -= dt;
+            m.dist += 5 * dt;
+            if (m.dist > CFG.frontSpawnDist) { scene.remove(m.mesh); frontMonster = null; }
+        } else {
+            let speed = CFG.monsterFrontSpeed;
+            if (isMovingBackward) speed = CFG.monsterFrontChase;
+            m.dist -= speed * dt;
+            if (m.dist <= 1) handleFaceHug(true);
+        }
+        if (frontMonster === m) m.mesh.position.z = currentZ - m.dist;
+    }
+
+    if (backMonster) {
+        const m = backMonster;
+        if (m.spawnGrace > 0) {
+            m.spawnGrace -= dt;
+        } else if (m.retreatTimer > 0) {
+            m.retreatTimer -= dt;
+            m.dist += 6 * dt;
+            if (m.dist > CFG.backSpawnDist) { scene.remove(m.mesh); backMonster = null; }
+        } else {
+            let speed = isMovingForward ? CFG.monsterBackSpeed : CFG.monsterBackIdle;
+            m.dist -= speed * dt;
+            if (m.dist <= 1) handleFaceHug(false);
+        }
+        if (backMonster === m) m.mesh.position.z = currentZ + m.dist;
+    }
+}
+
+function handleFaceHug(isFront) {
+    if (isFront) {
+        if (hasShield) {
+            hasShield = false;
+            updateInventoryUI();
+            camShake = 0.5;
+        } else {
+            addThreat(CFG.faceHugDamage);
+            camShake = 1.0;
+        }
+        frontMonster.retreatTimer = 2.0;
+        frontMonster.dist = CFG.frontSpawnDist;
+        frontMonster.spawnGrace = CFG.spawnGrace;
+    } else {
+        gameOver("你被背后的怪物吞噬了...");
+    }
+}
+
+function addThreat(amount) {
+    if (gameState !== 'playing') return;
+    threatValue = Math.max(0, Math.min(MAX_THREAT, threatValue + amount));
+    updateThreatUI(threatValue);
+    if (threatValue >= MAX_THREAT) gameOver("阈限值达到极限，你陷入了疯狂...");
+}
+
+function triggerWarning(show) {
+    if (redflash) redflash.style.opacity = show ? '1' : '0';
+}
+
+/* ================================================================
+   十六、掉落
+   ================================================================ */
+function spawnDrop(forceType) {
+    let type = forceType;
+    if (!type) {
+        const r = Math.random();
+        if (r < CFG.bulletChance) type = 'bullet';
+        else if (r < CFG.bulletChance + CFG.potionChance) type = 'potion';
+    }
+    if (!type) return;
+
+    const geo = new THREE.CylinderGeometry(0.1, 0.1, 0.2, 8);
+    const mat = new THREE.MeshStandardMaterial({
+        color: type === 'bullet' ? 0xa8862c : 0x8b3fd6,
+        emissive: type === 'bullet' ? 0x332200 : 0x220055
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    const zPos = currentZ - 15 - Math.random() * 20;
+    mesh.position.set((Math.random() - 0.5) * 1.5, 0.4, zPos);
+    scene.add(mesh);
+    drops.push({ mesh, type, z: zPos });
+}
+
+function updateDrops(dt) {
+    for (let i = drops.length - 1; i >= 0; i--) {
+        const d = drops[i];
+        d.mesh.rotation.y += 2 * dt;
+        d.mesh.position.y = 0.4 + Math.sin(clockTime * 2) * 0.1;
+        if (d.z > currentZ + 10) { scene.remove(d.mesh); drops.splice(i, 1); continue; }
+        if (Math.abs(d.z - currentZ) < 1.5) {
+            if (d.type === 'bullet') bulletCount = Math.min(CFG.maxBullet, bulletCount + 1);
+            if (d.type === 'potion') potionCount = Math.min(CFG.maxPotion, potionCount + 1);
+            scene.remove(d.mesh);
+            drops.splice(i, 1);
+            updateInventoryUI();
+        }
+    }
+}
+
+/* ================================================================
+   十七、武器动作
+   ================================================================ */
+function triggerFire() {
+    if (gameState !== 'playing') return;
+    if (isFiring || isDrinking || bulletCount <= 0) return;
+    isFiring = true;
+    fireTime = 0;
+    bulletCount--;
+    updateInventoryUI();
+    pistolLight.intensity = CFG.muzzleFlashIntensity;
+    playGunSound();
+    camShake = Math.max(camShake, 0.12);
+
+    /* 子弹打背后怪 */
+    if (backMonster && backMonster.dist < 10 && backMonster.retreatTimer <= 0 && backMonster.spawnGrace <= 0) {
+        backMonster.hp -= CFG.weaponDamage;
+        if (backMonster.hp <= 0) {
+            scene.remove(backMonster.mesh);
+            backMonster = null;
+            addThreat(-15);
+            /* 击杀背后怪 → 触发结局 */
+            triggerEnding();
+        } else {
+            backMonster.retreatTimer = 1.5;
+            backMonster.dist += 2;
+        }
+    }
+}
+
+function triggerDrink() {
+    if (gameState !== 'playing') return;
+    if (isDrinking || isFiring || potionCount <= 0) return;
+    isDrinking = true;
+    drinkTime = 0;
+    potionCount--;
+    updateInventoryUI();
+    if (potionGroup) potionGroup.visible = true;
+}
+
+function updateWeaponAnim(dt) {
+    if (isFiring) {
+        fireTime += dt;
+        if (fireTime < 0.1) {
+            pistolGroup.rotation.z = Math.sin(fireTime / 0.1 * Math.PI) * 0.4;
+        } else if (fireTime < 0.3) {
+            pistolGroup.rotation.z = 0;
+            pistolSlide.position.x = -Math.sin((fireTime - 0.1) / 0.2 * Math.PI) * 0.06;
+        } else {
+            isFiring = false;
+            pistolSlide.position.x = 0;
+            pistolLight.intensity = 0;
+        }
+    }
+    if (isDrinking) {
+        drinkTime += dt;
+        if (drinkTime < 0.5) {
+            potionGroup.position.y = -0.5 + (drinkTime / 0.5) * 0.3;
+        } else if (drinkTime < 2.5) {
+            potionGroup.position.y = -0.2;
+            potionGroup.rotation.z = -0.5;
+            if (potionLiquid.scale.y > 0.1) potionLiquid.scale.y -= dt * 0.5;
+        } else if (drinkTime < 3.5) {
+            potionGroup.position.y = -0.2 - ((drinkTime - 2.5) / 1.0) * 0.3;
+            potionGroup.rotation.z = 0;
+        } else {
+            isDrinking = false;
+            potionGroup.position.y = -0.5;
+            potionLiquid.scale.y = 1;
+            potionGroup.visible = false;
+            hasShield = true;
+            updateInventoryUI();
+        }
+    }
+}
+
+/* ================================================================
+   十八、战斗重置 / 清理
+   ================================================================ */
+function resetCombat() {
+    threatValue = 0;
+    bulletCount = CFG.startBullet;
+    potionCount = CFG.startPotion;
+    hasShield = false;
+    gamePlayTime = 0;
+    frontSpawnTimer = CFG.frontSpawnDelay;
+    backSpawnTimer = CFG.monsterSpawnMin;
+    dropTimer = CFG.monsterSpawnMin;
+    potionDropTimer = 45;
+    camShake = 0;
+    isFiring = false; isDrinking = false;
+    fireTime = 0; drinkTime = 0;
+
+    if (frontMonster) { scene.remove(frontMonster.mesh); frontMonster = null; }
+    if (backMonster) { scene.remove(backMonster.mesh); backMonster = null; }
+    drops.forEach(d => scene.remove(d.mesh)); drops = [];
+
+    if (pistolGroup) { pistolGroup.rotation.z = 0; pistolSlide.position.x = 0; }
+    if (pistolLight) pistolLight.intensity = 0;
+    if (potionGroup) { potionGroup.position.y = -0.5; potionGroup.rotation.z = 0; potionGroup.visible = false; }
+    if (potionLiquid) potionLiquid.scale.y = 1;
+
+    triggerWarning(false);
+    updateThreatUI(0);
+    updateInventoryUI();
+}
+
+function cleanupCombat() {
+    if (frontMonster) { scene.remove(frontMonster.mesh); frontMonster = null; }
+    if (backMonster) { scene.remove(backMonster.mesh); backMonster = null; }
+    drops.forEach(d => scene.remove(d.mesh)); drops = [];
+    triggerWarning(false);
+    setCombatVisible(false);
+}
+
+/* ================================================================
+   十九、状态切换
+   ================================================================ */
+function enterMenuState() {
+    roomGroup.visible = false;
+    phoneGroup.visible = false;
+    corridorGroup.visible = true;
+    if (playerLight) playerLight.visible = true;
+    if (corridorAmbient) corridorAmbient.visible = true;
+
+    scene.background.set(CFG.fogColor);
+    scene.fog.color.set(CFG.fogColor);
+    scene.fog.density = CFG.fogDensity;
+
+    currentZ = 0;
+    camera.position.set(0, CFG.eyeHeight, 0);
+    camera.rotation.set(0, 0, 0);
+    updateChunks();
+    applyAll();
+
+    setCombatVisible(false);
+    if (btnFireEl) btnFireEl.style.display = 'none';
+    if (btnPauseEl) btnPauseEl.style.display = 'none';
+    if (crosshairEl) crosshairEl.style.display = 'none';
+    document.getElementById('pause-menu').classList.remove('show');
+    document.getElementById('ending-hint').classList.remove('show');
+    document.body.classList.remove('game-playing');
+}
+
+function enterRoomState() {
+    roomGroup.visible = true;
+    phoneGroup.visible = true;
+    corridorGroup.visible = false;
+    if (playerLight) playerLight.visible = false;
+    if (corridorAmbient) corridorAmbient.visible = false;
+
+    scene.background.set(0x020202);
+    scene.fog.color.set(0x010101);
+    scene.fog.density = 0.08;
+
+    camera.position.set(0, 1.6, 4.5);
+    camera.rotation.set(-3 * DEG, 0, 0);
+
+    phoneScreenMat.color.set(0xffffff);
+    phoneLight.color.set(0xffffff);
+    phoneLight.intensity = 0.6;
+    matScreen.emissiveIntensity = 1.8;
+    screenLight.intensity = 1.2;
+
+    postUniforms.uExposure.value = CFG.exposure;
+    postUniforms.uContrast.value = CFG.contrast;
+    postUniforms.uSaturation.value = CFG.saturation;
+    postUniforms.uVignette.value = CFG.vignette;
+    postUniforms.uGrain.value = CFG.grain;
+
+    setCombatVisible(false);
+    document.body.classList.remove('game-playing');
+}
+
+function switchToCorridor() {
+    if (inCorridor) return;
+    inCorridor = true;
+    roomGroup.visible = false;
+    phoneGroup.visible = false;
+    corridorGroup.visible = true;
+    if (playerLight) playerLight.visible = true;
+    if (corridorAmbient) corridorAmbient.visible = true;
+    scene.background.set(CFG.fogColor);
+    scene.fog.color.set(CFG.fogColor);
+    scene.fog.density = CFG.fogDensity;
+    currentZ = 0;
+    camera.position.set(0, 0.18, 0);
+    camera.rotation.set(18 * DEG, -35 * DEG, 80 * DEG);
+    updateChunks();
+    postUniforms.uExposure.value = 1.0;
+    postUniforms.uVignette.value = 0.85;
+    postUniforms.uGrain.value = 0.12;
+    postUniforms.uSaturation.value = 0.55;
+}
+
+/* restore=true 用于继续游戏 */
+function enterPlayState(restore) {
+    gameState = 'playing';
+    inCorridor = true;
+
+    roomGroup.visible = false;
+    phoneGroup.visible = false;
+    corridorGroup.visible = true;
+    if (playerLight) playerLight.visible = true;
+    if (corridorAmbient) corridorAmbient.visible = true;
+
+    scene.background.set(CFG.fogColor);
+    scene.fog.color.set(CFG.fogColor);
+    scene.fog.density = CFG.fogDensity;
+
+    camera.position.set(0, CFG.eyeHeight, currentZ);
+    camera.rotation.set(0, 0, 0);
+    lookYaw = 0; lookPitch = 0; roll = 0; targetYaw = 0; targetPitch = 0;
+    lookPhase = 'idle'; lookPhaseTimer = 0; lookJudged = false;
+    walkTime = 0;
+    updateLookBtn();
+    updateChunks();
+
+    mainMenuEl.classList.add('hidden');
+    gameUIEl.style.display = 'block';
+    btnLookEl.style.display = 'flex';
+    btnFireEl.style.display = 'flex';
+    btnPauseEl.style.display = 'flex';
+    crosshairEl.style.display = 'block';
+    dialogEl.classList.remove('show');
+    freeHint.classList.add('show');
+    document.getElementById('ending-hint').classList.remove('show');
+
+    setCombatVisible(true);
+    resetCombat();
+
+    if (restore) {
+        bulletCount = savedBullet;
+        potionCount = savedPotion;
+        threatValue = savedThreat;
+        hasShield = savedShield;
+        updateThreatUI(threatValue);
+        updateInventoryUI();
+    }
+
+    document.body.classList.add('game-playing');
+    applyAll();
+}
+
+/* ================================================================
+   二十、主菜单
+   ================================================================ */
+function bindMenuButtons() {
+    const btnNew = document.getElementById('btn-new');
+    const btnContinue = document.getElementById('btn-continue');
+    const btnSettings = document.getElementById('btn-settings');
+    const btnResume = document.getElementById('btn-resume');
+    const btnPauseReturn = document.getElementById('btn-pause-return');
+
+    btnNew.addEventListener('click', startNewGame);
+
+    btnContinue.addEventListener('click', () => {
+        if (!hasSave) return;
+        ensureAudio();
+        currentZ = savedZ;
+        stamina = savedStamina;
+        isExhausted = false;
+        isMovingForward = false; isMovingBackward = false; isRunInput = false;
+        updateStaminaUI();
+        enterPlayState(true);
+    });
+
+    btnSettings.addEventListener('click', () => {
+        document.getElementById('debug-panel').classList.toggle('open');
+    });
+
+    btnResume.addEventListener('click', resumeGame);
+    btnPauseReturn.addEventListener('click', () => {
+        document.getElementById('pause-menu').classList.remove('show');
+        returnToMenu();
+    });
+
+    btnPauseEl.addEventListener('click', pauseGame);
+}
+
+function updateContinueBtn() {
+    const btnContinue = document.getElementById('btn-continue');
+    if (!btnContinue) return;
+    if (hasSave) {
+        btnContinue.disabled = false;
+        btnContinue.textContent = '继续游戏';
+    } else {
+        btnContinue.disabled = true;
+        btnContinue.textContent = '继续游戏 (无存档)';
+    }
+}
+
+function startNewGame() {
+    ensureAudio();
+    currentZ = 0;
+    stamina = CFG.staminaMax;
+    isExhausted = false;
+    walkTime = 0;
+    lookPhase = 'idle'; lookYaw = 0; lookPitch = 0; targetYaw = 0; targetPitch = 0; roll = 0;
+    isMovingForward = false; isMovingBackward = false; isRunInput = false;
+    currentStep = 0;
+    inCorridor = false;
+    camAnim = null;
+    actionState = null;
+    typingState = null;
+    introPhase = 'idle';
+    updateThreatUI(0);
+    updateStaminaUI();
+
+    mainMenuEl.classList.add('hidden');
+    gameUIEl.style.display = 'none';
+    btnLookEl.style.display = 'none';
+    btnFireEl.style.display = 'none';
+    btnPauseEl.style.display = 'none';
+    crosshairEl.style.display = 'none';
+    freeHint.classList.remove('show');
+    document.getElementById('debug-panel').classList.remove('open');
+    document.getElementById('ending-hint').classList.remove('show');
+    document.body.classList.remove('game-playing');
+
+    whiteout.style.transition = 'none';
+    whiteout.style.opacity = '0';
+
+    enterRoomState();
+    gameState = 'intro';
+    runStep();
+}
+
+/* ================================================================
+   二十一、存档 / 返回
+   ================================================================ */
+function saveSnapshot() {
+    savedZ = currentZ;
+    savedStamina = stamina;
+    savedBullet = bulletCount;
+    savedPotion = potionCount;
+    savedThreat = threatValue;
+    savedShield = hasShield;
+    hasSave = true;
+    updateContinueBtn();
+}
+
+function returnToMenu() {
+    if (gameState === 'playing' || gameState === 'paused') {
+        saveSnapshot();
+    }
+
+    gameState = 'menu';
+    introPhase = 'idle';
+    camAnim = null; actionState = null; typingState = null;
+    inCorridor = false;
+
+    isMovingForward = false; isMovingBackward = false; isRunInput = false;
+    lookPhase = 'idle'; lookYaw = 0; lookPitch = 0; targetYaw = 0; targetPitch = 0; roll = 0;
+    updateLookBtn();
+
+    dialogEl.classList.remove('show');
+    whiteout.style.transition = 'none';
+    whiteout.style.opacity = '0';
+    freeHint.classList.remove('show');
+    document.getElementById('pause-menu').classList.remove('show');
+    document.getElementById('ending-hint').classList.remove('show');
+
+    cleanupCombat();
+
+    if (corridorGain && audioCtx) {
+        corridorGain.gain.setTargetAtTime(1.0, audioCtx.currentTime, 0.3);
+    }
+    if (masterGain && audioCtx) {
+        masterGain.gain.setTargetAtTime(CFG.audioVolume, audioCtx.currentTime, 0.3);
+    }
+
+    document.getElementById('debug-panel').classList.remove('open');
+    mainMenuEl.classList.remove('hidden');
+    gameUIEl.style.display = 'none';
+    btnLookEl.style.display = 'none';
+    btnFireEl.style.display = 'none';
+    btnPauseEl.style.display = 'none';
+    crosshairEl.style.display = 'none';
+
+    enterMenuState();
+}
+
+/* ================================================================
+   二十二、结束 / 暂停
+   ================================================================ */
+function gameOver(msg) {
+    cleanupCombat();
+    gameState = 'menu';
+    inCorridor = false;
+    introPhase = 'idle';
+
+    hasSave = false;
+    updateContinueBtn();
+
+    gameUIEl.style.display = 'none';
+    btnLookEl.style.display = 'none';
+    btnFireEl.style.display = 'none';
+    btnPauseEl.style.display = 'none';
+    crosshairEl.style.display = 'none';
+    document.getElementById('pause-menu').classList.remove('show');
+    document.body.classList.remove('game-playing');
+
+    alert(msg + "\n即将返回主菜单");
+
+    mainMenuEl.classList.remove('hidden');
+    enterMenuState();
+}
+
+function pauseGame() {
+    if (gameState !== 'playing') return;
+    gameState = 'paused';
+    isMovingForward = false; isMovingBackward = false; isRunInput = false;
+    document.getElementById('pause-menu').classList.add('show');
+    gameUIEl.style.display = 'none';
+    btnFireEl.style.display = 'none';
+    btnPauseEl.style.display = 'none';
+    btnLookEl.style.display = 'none';
+    crosshairEl.style.display = 'none';
+    triggerWarning(false);
+    document.body.classList.remove('game-playing');
+}
+
+function resumeGame() {
+    if (gameState !== 'paused') return;
+    gameState = 'playing';
+    document.getElementById('pause-menu').classList.remove('show');
+    gameUIEl.style.display = 'block';
+    btnFireEl.style.display = 'flex';
+    btnPauseEl.style.display = 'flex';
+    btnLookEl.style.display = 'flex';
+    crosshairEl.style.display = 'block';
+    document.body.classList.add('game-playing');
+}
+
+/* ================================================================
+   二十三、缓动 / 字幕
+   ================================================================ */
+function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+
+function startSubtitle(en, cn) {
+    introPhase = 'typing';
+    dialogEl.classList.add('show');
+    dlgEn.textContent = '';
+    dlgCn.textContent = '';
+    dlgCn.classList.remove('show');
+    dlgHint.classList.remove('show');
+    const cursorEl = document.createElement('span');
+    cursorEl.className = 'cursor';
+    dlgEn.appendChild(cursorEl);
+    typingState = { full: en, cn: cn, index: 0, timer: 0, interval: 0.055, finished: false };
+}
+function renderTyping() {
+    if (!typingState) return;
+    dlgEn.textContent = typingState.full.substring(0, typingState.index);
+    if (!typingState.finished) {
+        const c = document.createElement('span');
+        c.className = 'cursor';
+        dlgEn.appendChild(c);
+    }
+}
+function updateTyping(dt) {
+    if (!typingState || typingState.finished) return;
+    typingState.timer += dt;
+    let changed = false;
+    while (typingState.timer >= typingState.interval && typingState.index < typingState.full.length) {
+        typingState.timer -= typingState.interval;
+        typingState.index++;
+        playKeySound();
+        changed = true;
+    }
+    if (changed) renderTyping();
+    if (typingState.index >= typingState.full.length && !typingState.finished) {
+        typingState.finished = true;
+        renderTyping();
+        const ts = typingState;
+        setTimeout(function () {
+            dlgCn.textContent = ts.cn;
+            dlgCn.classList.add('show');
+            setTimeout(function () {
+                if (introPhase === 'typing' || introPhase === 'waiting') {
+                    introPhase = 'waiting';
+                    dlgHint.classList.add('show');
+                }
+            }, 400);
+        }, 200);
+    }
+}
+function finishTypingNow() {
+    if (!typingState || typingState.finished) return;
+    typingState.index = typingState.full.length;
+    typingState.finished = true;
+    renderTyping();
+    dlgCn.textContent = typingState.cn;
+    dlgCn.classList.add('show');
+    introPhase = 'waiting';
+    dlgHint.classList.add('show');
+}
+
+/* ================================================================
+   二十四、相机动画 / 演出
+   ================================================================ */
+function startCameraAnim(from, to, duration) {
+    introPhase = 'anim';
+    camAnim = { from: from, to: to, duration: duration, t: 0 };
+}
+function updateCameraAnim(dt) {
+    if (!camAnim) return false;
+    camAnim.t += dt;
+    const u = Math.min(1, camAnim.t / camAnim.duration);
+    const e = easeInOutCubic(u);
+    const fp = camAnim.from.pitch * DEG, tp = camAnim.to.pitch * DEG;
+    const fy = camAnim.from.yaw * DEG, ty = camAnim.to.yaw * DEG;
+    const fr = camAnim.from.roll * DEG, tr = camAnim.to.roll * DEG;
+    camera.rotation.x = fp + (tp - fp) * e;
+    camera.rotation.y = fy + (ty - fy) * e;
+    camera.rotation.z = fr + (tr - fr) * e;
+    if (u >= 1) { camAnim = null; return true; }
+    return false;
+}
+const phoneWhite = new THREE.Color(0xffffff);
+const phoneRed = new THREE.Color(0xff2222);
+function startAction(name, duration) {
+    introPhase = 'anim';
+    actionState = { name: name, duration: duration, t: 0 };
+    if (name === 'phoneRed') phoneLight.intensity = 0.7;
+    if (name === 'screenBlast') whiteout.style.transition = 'none';
+    if (name === 'holdWhite') {
+        whiteout.style.transition = 'none';
+        whiteout.style.opacity = '1';
+    }
+    if (name === 'fadeWhite') {
+        switchToCorridor();
+        whiteout.style.transition = 'none';
+        void whiteout.offsetWidth;
+        whiteout.style.transition = 'opacity 2.5s ease-out';
+        whiteout.style.opacity = '0';
+    }
+}
+function updateAction(dt) {
+    if (!actionState) return false;
+    actionState.t += dt;
+    const u = Math.min(1, actionState.t / actionState.duration);
+    if (actionState.name === 'phoneRed') {
+        const col = phoneWhite.clone().lerp(phoneRed, u);
+        phoneScreenMat.color.copy(col);
+        phoneLight.color.copy(col);
+    } else if (actionState.name === 'phonePulse') {
+        const pulse = 0.55 + Math.sin(u * Math.PI * 4) * 0.45;
+        phoneLight.intensity = 0.4 + pulse * 0.8;
+    } else if (actionState.name === 'screenBlast') {
+        matScreen.emissiveIntensity = 1.8 + u * 14;
+        screenLight.intensity = 1.2 + u * 10;
+        postUniforms.uExposure.value = 1.0 + u * 3.0;
+        if (u > 0.5) whiteout.style.opacity = String((u - 0.5) * 2);
+    } else if (actionState.name === 'standUp') {
+        const e = easeOutCubic(u);
+        camera.position.y = 0.18 + (CFG.eyeHeight - 0.18) * e;
+        camera.rotation.x = 18 * DEG * (1 - e);
+        camera.rotation.y = -35 * DEG * (1 - e);
+        camera.rotation.z = 80 * DEG * (1 - e);
+    }
+    if (u >= 1) { actionState = null; return true; }
+    return false;
+}
+
+/* ================================================================
+   二十五、剧本
+   ================================================================ */
+const STEPS = [
+    { type: 'subtitle', en: "Finally... I've finished this project.", cn: "（这个项目终于我做完了）" },
+    { type: 'camera', duration: 1.2, from: { pitch: -3, yaw: 0, roll: 0 }, to: { pitch: -38.5, yaw: 13, roll: -6 } },
+    { type: 'subtitle', en: "I don't think I'll ever forget this day.", cn: "（我大概永远忘不了这一天）" },
+    { type: 'anim', duration: 0.6, action: 'phoneRed' },
+    { type: 'anim', duration: 0.9, action: 'phonePulse' },
+    { type: 'camera', duration: 1.2, from: { pitch: -38.5, yaw: 13, roll: -6 }, to: { pitch: -3, yaw: 0, roll: 0 } },
+    { type: 'anim', duration: 0.8, action: 'screenBlast' },
+    { type: 'anim', duration: 0.5, action: 'holdWhite' },
+    { type: 'anim', duration: 2.5, action: 'fadeWhite' },
+    { type: 'subtitle', en: "Damn it... where am I? No. I need to find a way out.", cn: "（该死，这是哪里？不行，我需要想个办法逃出这里）" },
+    { type: 'anim', duration: 1.5, action: 'standUp' },
+    { type: 'end' }
+];
+function runStep() {
+    if (currentStep >= STEPS.length) return;
+    const step = STEPS[currentStep];
+    currentStep++;
+    if (step.type === 'subtitle') startSubtitle(step.en, step.cn);
+    else if (step.type === 'camera') startCameraAnim(step.from, step.to, step.duration);
+    else if (step.type === 'anim') startAction(step.action, step.duration);
+    else if (step.type === 'end') {
+        introPhase = 'done';
+        dialogEl.classList.remove('show');
+        dlgHint.classList.remove('show');
+        postUniforms.uSaturation.value = CFG.saturation;
+        postUniforms.uVignette.value = CFG.vignette;
+        postUniforms.uGrain.value = CFG.grain;
+        postUniforms.uExposure.value = CFG.exposure;
+        postUniforms.uContrast.value = CFG.contrast;
+        enterPlayState(false);
+    }
+}
+function advance() {
+    ensureAudio();
+    if (introPhase === 'typing') { finishTypingNow(); return; }
+    if (introPhase === 'waiting') {
+        dialogEl.classList.remove('show');
+        dlgHint.classList.remove('show');
+        runStep();
+    }
+}
+
+/* ================================================================
+   二十六、操控
+   ================================================================ */
+function bindControls() {
+    const btnW = document.getElementById('btn-w');
+    const btnS = document.getElementById('btn-s');
+    const btnLook = document.getElementById('btn-look');
+
+    window.addEventListener('pointerdown', function () {
+        ensureAudio();
+        if (gameState === 'intro') advance();
+        if (gameState === 'ending') Ending.advance();
+    }, { passive: true });
+
+    window.addEventListener('keydown', function (e) {
+        ensureAudio();
+        if (gameState === 'ending') {
+            if (e.key === 'f' || e.key === 'F') { e.preventDefault(); Ending.advance(); }
+            return;
+        }
+        if (gameState === 'intro') {
+            if (e.key === 'f' || e.key === 'F') { e.preventDefault(); advance(); }
+            return;
+        }
+        if (gameState !== 'playing') return;
+        if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') isMovingForward = true;
+        if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') isMovingBackward = true;
+        if (e.key === 'q' || e.key === 'Q') startLookBack();
+        if (e.key === 'Shift') isRunInput = true;
+        if (e.key === 'f' || e.key === 'F') { e.preventDefault(); triggerFire(); }
+        if (e.key === 'r' || e.key === 'R') triggerDrink();
+        if (e.key === 'Escape') pauseGame();
+    });
+    window.addEventListener('keyup', function (e) {
+        if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') isMovingForward = false;
+        if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') isMovingBackward = false;
+        if (e.key === 'Shift') isRunInput = false;
+    });
+
+    let wRect = null;
+    btnW.addEventListener('pointerdown', e => {
+        e.preventDefault(); btnW.classList.add('pressed');
+        wRect = btnW.getBoundingClientRect();
+        isRunInput = e.clientY < wRect.top + wRect.height / 2;
+        isMovingForward = true;
+        try { btnW.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    btnW.addEventListener('pointermove', e => {
+        if (!isMovingForward || !wRect) return;
+        isRunInput = e.clientY < wRect.top + wRect.height / 2;
+    });
+    function releaseW(e) {
+        if (e) e.preventDefault();
+        btnW.classList.remove('pressed');
+        isMovingForward = false; isRunInput = false;
+        if (e && e.pointerId) { try { btnW.releasePointerCapture(e.pointerId); } catch (err) {} }
+    }
+    btnW.addEventListener('pointerup', releaseW);
+    btnW.addEventListener('pointercancel', releaseW);
+
+    btnS.addEventListener('pointerdown', e => { e.preventDefault(); btnS.classList.add('pressed'); isMovingBackward = true; });
+    function releaseS(e) { if (e) e.preventDefault(); btnS.classList.remove('pressed'); isMovingBackward = false; }
+    btnS.addEventListener('pointerup', releaseS);
+    btnS.addEventListener('pointercancel', releaseS);
+    btnS.addEventListener('pointerleave', releaseS);
+
+    btnLook.addEventListener('click', e => {
+        e.preventDefault();
+        if (startLookBack()) return;
+        btnLook.classList.add('deny');
+        setTimeout(() => btnLook.classList.remove('deny'), 220);
+    });
+
+    btnFireEl.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        triggerFire();
+    });
+}
+
+/* ================================================================
+   二十七、调参面板
+   ================================================================ */
+function fmtVal(item, v) {
+    return item.type === 'color' ? String(v) : (item.step < 1 ? Number(v).toFixed(2) : String(Math.round(v)));
+}
+function buildPanel() {
+    const panel = document.getElementById('debug-panel');
+    GROUPS.forEach(group => {
+        const d = document.createElement('details');
+        d.open = group.title.includes('光照') || group.title.includes('墙面') || group.title.includes('回头')
+              || group.title.includes('体力') || group.title.includes('武器') || group.title.includes('怪物');
+        const s = document.createElement('summary'); s.textContent = group.title; d.appendChild(s);
+        group.items.forEach(item => {
+            const wrap = document.createElement('div'); wrap.className = 'control-group';
+            const label = document.createElement('label');
+            const name = document.createElement('span'); name.textContent = item.label;
+            const out = document.createElement('span'); out.id = 'val-' + item.key; out.textContent = fmtVal(item, CFG[item.key]);
+            label.appendChild(name); label.appendChild(out); wrap.appendChild(label);
+            let input = document.createElement('input'); input.id = 'inp-' + item.key;
+            if (item.type === 'color') {
+                input.type = 'color'; input.value = CFG[item.key];
+                input.addEventListener('input', () => {
+                    CFG[item.key] = input.value; out.textContent = input.value; onParamChange(item.key, input.value);
+                });
+            } else {
+                input.type = 'range'; input.min = item.min; input.max = item.max; input.step = item.step; input.value = CFG[item.key];
+                input.addEventListener('input', () => {
+                    const v = parseFloat(input.value); CFG[item.key] = v; out.textContent = fmtVal(item, v); onParamChange(item.key, v);
+                });
+            }
+            wrap.appendChild(input); d.appendChild(wrap);
+        });
+        panel.appendChild(d);
+    });
+
+    const btnCopy = document.createElement('button');
+    btnCopy.className = 'panel-btn'; btnCopy.id = 'btn-copy'; btnCopy.textContent = '📋 复制参数';
+    panel.appendChild(btnCopy);
+
+    const btnReset = document.createElement('button');
+    btnReset.className = 'panel-btn'; btnReset.id = 'btn-reset'; btnReset.textContent = '↺ 恢复默认';
+    panel.appendChild(btnReset);
+
+    const btnMenu = document.createElement('button');
+    btnMenu.className = 'panel-btn'; btnMenu.id = 'btn-menu-return'; btnMenu.textContent = '⬅ 返回主菜单';
+    panel.appendChild(btnMenu);
+
+    const hint = document.createElement('div');
+    hint.className = 'hint'; hint.textContent = '调好后点「复制参数」，把结果整段发给 AI 即可。';
+    panel.appendChild(hint);
+}
+function syncUI() {
+    GROUPS.forEach(group => {
+        group.items.forEach(item => {
+            const input = document.getElementById('inp-' + item.key);
+            const out = document.getElementById('val-' + item.key);
+            if (!input) return;
+            input.value = CFG[item.key];
+            if (out) out.textContent = fmtVal(item, CFG[item.key]);
+        });
+    });
+}
+function applyAll() {
+    scene.fog.density = CFG.fogDensity;
+    scene.fog.color.set(CFG.fogColor);
+    scene.background.set(CFG.fogColor);
+    if (playerLight) {
+        playerLight.intensity = CFG.lightIntensity;
+        playerLight.distance = CFG.lightDistance;
+        playerLight.color.set(CFG.lightColor);
+    }
+    if (corridorAmbient) {
+        corridorAmbient.intensity = CFG.ambient;
+        corridorAmbient.color.set(CFG.ambientColor);
+    }
+    if (wallMat) {
+        applyWallBrightness(CFG.wallBrightness);
+        wallMat.bumpScale = floorMat.bumpScale = ceilMat.bumpScale = CFG.bumpScale;
+        wallMat.roughness = floorMat.roughness = ceilMat.roughness = CFG.roughness;
+    }
+    if (postUniforms) {
+        postUniforms.uExposure.value = CFG.exposure;
+        postUniforms.uContrast.value = CFG.contrast;
+        postUniforms.uSaturation.value = CFG.saturation;
+        postUniforms.uVignette.value = CFG.vignette;
+        postUniforms.uGrain.value = CFG.grain;
+        postUniforms.uChroma.value = CFG.chroma;
+        postUniforms.uBlur.value = CFG.blur;
+        postUniforms.uScanline.value = CFG.scanline;
+        postUniforms.uCurve.value = 0.0;
+        postUniforms.uBlink.value = 0.0;
+        postUniforms.uFade.value = 1.0;
+    }
+    if (masterGain && audioCtx) masterGain.gain.setTargetAtTime(CFG.audioVolume, audioCtx.currentTime, 0.1);
+}
+function bindPanelButtons() {
+    const panel = document.getElementById('debug-panel');
+    const toggle = document.getElementById('toggle-debug');
+    toggle.addEventListener('click', e => { e.stopPropagation(); panel.classList.toggle('open'); });
+    document.getElementById('btn-reset').addEventListener('click', () => {
+        Object.assign(CFG, DEFAULTS);
+        stamina = CFG.staminaMax; savedStamina = stamina; isExhausted = false; isRunInput = false;
+        updateStaminaUI(); syncUI(); applyAll(); rebuildTexture(); rebuildGeometry();
+    });
+    document.getElementById('btn-copy').addEventListener('click', () => copyText(collectParams()));
+    document.getElementById('btn-menu-return').addEventListener('click', returnToMenu);
+}
+function collectParams() {
+    const lines = [];
+    GROUPS.forEach(group => {
+        lines.push('【' + group.title.replace(/[^\u4e00-\u9fa5A-Za-z]/g, '').trim() + '】');
+        group.items.forEach(item => lines.push(item.label + ': ' + fmtVal(item, CFG[item.key])));
+    });
+    return lines.join('\n');
+}
+function copyText(text) {
+    const done = () => toast('已复制到剪贴板');
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    } else fallbackCopy(text, done);
+}
+function fallbackCopy(text, cb) {
+    const ta = document.createElement('textarea'); ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0'; ta.style.top = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta); cb();
+}
+function toast(msg) {
+    const btn = document.getElementById('btn-copy');
+    if (!btn || btn.dataset.busy) return;
+    btn.dataset.busy = '1'; const old = btn.textContent;
+    btn.textContent = '✅ ' + msg;
+    setTimeout(() => { btn.textContent = old; delete btn.dataset.busy; }, 1200);
+}
+
+/* ================================================================
+   二十八、结局触发器
+   ================================================================ */
+function triggerEnding() {
+    cleanupCombat();
+    gameState = 'ending';
+    inCorridor = false;
+
+    gameUIEl.style.display = 'none';
+    btnLookEl.style.display = 'none';
+    btnFireEl.style.display = 'none';
+    btnPauseEl.style.display = 'none';
+    crosshairEl.style.display = 'none';
+    dialogEl.classList.remove('show');
+    dlgHint.classList.remove('show');
+    freeHint.classList.remove('show');
+    document.getElementById('pause-menu').classList.remove('show');
+    document.body.classList.remove('game-playing');
+
+    /* 后处理切到结局预设 */
+    postUniforms.uExposure.value = 1.10;
+    postUniforms.uContrast.value = 1.18;
+    postUniforms.uSaturation.value = 0.68;
+    postUniforms.uVignette.value = 1.15;
+    postUniforms.uGrain.value = 0.115;
+    postUniforms.uChroma.value = 0.0065;
+    postUniforms.uBlur.value = 1.2;
+    postUniforms.uScanline.value = 0.38;
+    postUniforms.uCurve.value = 0.17;
+    postUniforms.uBlink.value = 0.0;
+    postUniforms.uFade.value = 1.0;
+
+    hasSave = false;
+    updateContinueBtn();
+
+    if (corridorGain && audioCtx) {
+        corridorGain.gain.setTargetAtTime(0.18, audioCtx.currentTime, 0.8);
+    }
+
+    Ending.begin();
+}
+
+/* ================================================================
+   二十九、结局模块
+   ================================================================ */
+const Ending = (function () {
+    let phase = 'idle';          /* 'idle' | 'corridor' | 'room' | 'finished' */
+    let phaseTime = 0;
+    let corridorDone = false;
+
+    /* ---------- 走廊 ---------- */
+    const cScene = new THREE.Scene();
+    const cCamera = new THREE.PerspectiveCamera(72, innerWidth / innerHeight, 0.05, 260);
+    cCamera.rotation.order = 'YXZ';
+    cScene.add(cCamera);
+
+    let mapRoot, cCorridorGroup, cWallMat, cFloorMat, cCeilMat, cBrickMat, cDebrisMat;
+    let cGeoWall, cGeoFloor, cGeoBrick, cGeoDebris, cBaseTex;
+    let monsterSprite = null;
+    let terminalGroup = null, handTerminalGroup = null;
+    let explosionParticles = null;
+    let cPlayerLight, cAmbient;
+    let breathTimer = 0, footTimer = 0;
+
+    let cState = 'explode';
+    let cStateTime = 0;
+    let explosionStarted = false;
+
+    const camBase = { x: 0.00, y: 0.90, z: 16.50, yaw: 163.3 * DEG, pitch: -1.4 * DEG };
+    let cCamAnim = null;
+    let cCamShake = 0;
+    let cBreathIntensity = 1.0;
+    let cClockTime = 0;
+
+    const EXPLOSION_CENTER = new THREE.Vector3(-0.6, 1.2, 18.5);
+    const TERMINAL_POS = new THREE.Vector3(-0.6, 0.1, 18.2);
+
+    /* 对话 */
+    let dialogueState = 'none';
+    let currentLine = { en: '', cn: '' };
+    let typeIndex = 0, typeTimer = 0;
+    const charDelay = 0.05;
+
+    /* ---------- 房间 ---------- */
+    const rScene = new THREE.Scene();
+    rScene.background = new THREE.Color(0x232322);
+    rScene.fog = new THREE.FogExp2(0x232322, 0.045);
+    const rCamera = new THREE.PerspectiveCamera(68, innerWidth / innerHeight, 0.05, 200);
+
+    let lampA, lampB, hemiLight, roomAmbient, screenObj, screenGlow;
+    let doorGroup, person, fogGroup;
+
+    const POS_START = new THREE.Vector3(0.30, 1.60, 3.50);
+    const POS_DESK  = new THREE.Vector3(1.75, 0.98, -0.55);
+    const LOOK_SCREEN = new THREE.Vector3(0.0, 1.30, 0.30);
+    const LOOK_DOOR   = new THREE.Vector3(1.05, 1.95, 6.60);
+    const LOOK_DESK   = new THREE.Vector3(0.0, 1.45, 6.80);
+
+    const T_WAKE_END   = 4.5;
+    const T_LOOK_START = 4.5;
+    const T_LOOK_END   = 7.5;
+    const T_MOVE_START = 9.0;
+    const T_MOVE_END   = 13.0;
+    const T_WALK_START = 13.5;
+    const T_WALK_END   = 18.5;
+    const T_DOOR_START = 18.0;
+    const T_DOOR_END   = 22.5;
+    const T_FOG_START  = 21.5;
+    const T_FOG_END    = 25.8;
+    const T_BLACK_START = 25.8;
+    const T_BLACK_END   = 27.2;
+
+    const _m4 = new THREE.Matrix4();
+    const _up = new THREE.Vector3(0, 1, 0);
+    const _qRoll = new THREE.Quaternion();
+    const _zAxis = new THREE.Vector3(0, 0, 1);
+
+    let rT = 0;
+    let roomRunning = false;
+    let knockTimer = 0;
+    let doorSoundPlayed = false;
+
+    function sstep(a, b, x) {
+        const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+        return t * t * (3 - 2 * t);
+    }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function easeInOut(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+    /* ---------- 走廊初始化 ---------- */
+    function cInitMaterials() {
+        cGeoWall  = new THREE.BoxGeometry(0.2, CFG.ceilingHeight, CFG.chunkLength);
+        cGeoFloor = new THREE.BoxGeometry(CFG.corridorWidth, 0.2, CFG.chunkLength);
+        cGeoBrick = new THREE.BoxGeometry(CFG.corridorWidth, 0.1, 0.4);
+        cGeoDebris = new THREE.BoxGeometry(1, 1, 1);
+        cWallMat  = new THREE.MeshStandardMaterial({ roughness: CFG.roughness, metalness: 0.0, bumpScale: CFG.bumpScale });
+        cFloorMat = new THREE.MeshStandardMaterial({ roughness: CFG.roughness, metalness: 0.0, bumpScale: CFG.bumpScale });
+        cCeilMat  = new THREE.MeshStandardMaterial({ roughness: CFG.roughness, metalness: 0.0, bumpScale: CFG.bumpScale });
+        cBrickMat = new THREE.MeshStandardMaterial({ color: 0x2a2620, roughness: 1.0 });
+        cDebrisMat = new THREE.MeshStandardMaterial({ color: 0x39332a, roughness: 1.0 });
+        const c = Math.max(0, Math.min(1, CFG.wallBrightness / 255));
+        cWallMat.color.setRGB(c, c, c); cCeilMat.color.setRGB(c, c, c);
+        cFloorMat.color.setRGB(c * 0.78, c * 0.78, c * 0.78);
+
+        cBaseTex = new THREE.CanvasTexture(makeWallTextureCanvas());
+        cBaseTex.wrapS = cBaseTex.wrapT = THREE.RepeatWrapping;
+        cBaseTex.encoding = THREE.sRGBEncoding;
+        cBaseTex.anisotropy = maxAniso;
+        function cloneTexTo(mat) {
+            const t = cBaseTex.clone();
+            t.needsUpdate = true; t.wrapS = t.wrapT = THREE.RepeatWrapping;
+            t.encoding = THREE.sRGBEncoding; t.anisotropy = maxAniso;
+            mat.map = t; mat.bumpMap = t; mat.needsUpdate = true;
+        }
+        cloneTexTo(cWallMat); cloneTexTo(cFloorMat); cloneTexTo(cCeilMat);
+        const til = CFG.wallTiling;
+        cWallMat.map.repeat.set(CFG.chunkLength / 2 * til, CFG.ceilingHeight / 2 * til);
+        cCeilMat.map.repeat.set(CFG.chunkLength / 2 * til, CFG.ceilingHeight / 2 * til);
+        cFloorMat.map.repeat.set(CFG.corridorWidth / 2 * til, CFG.chunkLength / 2 * til);
+    }
+
+    function createChunkAt(index) {
+        const g = new THREE.Group();
+        const L = CFG.chunkLength, W = CFG.corridorWidth, H = CFG.ceilingHeight, halfZ = -L / 2;
+        const lw = new THREE.Mesh(cGeoWall, cWallMat); lw.position.set(-W / 2, H / 2, halfZ); g.add(lw);
+        const rw = new THREE.Mesh(cGeoWall, cWallMat); rw.position.set(W / 2, H / 2, halfZ); g.add(rw);
+        const fl = new THREE.Mesh(cGeoFloor, cFloorMat); fl.position.set(0, 0, halfZ); g.add(fl);
+        const ce = new THREE.Mesh(cGeoFloor, cCeilMat); ce.position.set(0, H, halfZ); g.add(ce);
+        const ridges = Math.round(CFG.ridges);
+        for (let i = 0; i < ridges; i++) {
+            const r = new THREE.Mesh(cGeoBrick, cBrickMat);
+            r.position.set(0, 0.15, -(i + 0.5) * (L / ridges)); g.add(r);
+        }
+        const debris = Math.round(CFG.debris);
+        for (let i = 0; i < debris; i++) {
+            const m = new THREE.Mesh(cGeoDebris, cDebrisMat);
+            const s = 0.02 + Math.random() * 0.07;
+            m.scale.set(s, s * (0.5 + Math.random() * 0.8), s);
+            m.position.set((Math.random() - 0.5) * (W - 0.28), 0.1 + s * 0.4, -Math.random() * L);
+            m.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            g.add(m);
+        }
+        g.position.z = -index * L;
+        cCorridorGroup.add(g);
+        return g;
+    }
+
+    function cInit() {
+        cScene.background = new THREE.Color(CFG.fogColor);
+        cScene.fog = new THREE.FogExp2(CFG.fogColor, CFG.fogDensity);
+        mapRoot = new THREE.Group();
+        cScene.add(mapRoot);
+        cCorridorGroup = new THREE.Group();
+        mapRoot.add(cCorridorGroup);
+
+        cInitMaterials();
+        /* 走廊覆盖 z ∈ [-22, 22] */
+        for (let i = -2; i <= 2; i++) createChunkAt(i);
+
+        cPlayerLight = new THREE.PointLight(CFG.lightColor, CFG.lightIntensity, CFG.lightDistance, 1);
+        cPlayerLight.position.set(0, 0, 0);
+        cCamera.add(cPlayerLight);
+
+        cAmbient = new THREE.AmbientLight(CFG.ambientColor, CFG.ambient);
+        cScene.add(cAmbient);
+
+        const fillLight = new THREE.PointLight(0x88aaff, 0.8, 8);
+        fillLight.position.set(-0.6, 1.5, 18.0);
+        mapRoot.add(fillLight);
+
+        createCMonster();
+        createCTerminal();
+        createCHandTerminal();
+
+        cCamera.position.set(camBase.x, camBase.y, camBase.z);
+        cCamera.rotation.set(camBase.pitch, camBase.yaw, 0);
+    }
+
+    function createWallHuggerTexture() {
+        const size = 512;
+        const cv = document.createElement('canvas');
+        cv.width = cv.height = size;
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#2a0505'; ctx.shadowColor = '#aa1111'; ctx.shadowBlur = 15;
+        ctx.beginPath(); ctx.ellipse(256, 100, 30, 45, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(245, 140); ctx.lineTo(267, 140); ctx.lineTo(275, 350); ctx.lineTo(237, 350); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(245, 150); ctx.lineTo(150, 100); ctx.lineTo(10, 180); ctx.lineTo(10, 210); ctx.lineTo(140, 130); ctx.lineTo(240, 180); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(240, 180); ctx.lineTo(10, 300); ctx.lineTo(10, 330); ctx.lineTo(230, 210); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(267, 150); ctx.lineTo(362, 100); ctx.lineTo(502, 180); ctx.lineTo(502, 210); ctx.lineTo(372, 130); ctx.lineTo(272, 180); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(272, 180); ctx.lineTo(502, 300); ctx.lineTo(502, 330); ctx.lineTo(282, 210); ctx.fill();
+        const grad = ctx.createLinearGradient(0, 350, 0, 512);
+        grad.addColorStop(0, 'rgba(42,5,5,1)'); grad.addColorStop(1, 'rgba(42,5,5,0)');
+        ctx.fillStyle = grad; ctx.fillRect(150, 350, 212, 162);
+        const img = ctx.getImageData(0, 0, size, size);
+        const d = img.data;
+        for (let i = 0; i < d.length; i += 4) {
+            if (d[i + 3] > 0) {
+                const noise = (Math.random() - 0.5) * 20;
+                d[i] = Math.max(0, Math.min(255, d[i] + noise));
+                d[i+1] = Math.max(0, Math.min(255, d[i+1] + noise));
+                d[i+2] = Math.max(0, Math.min(255, d[i+2] + noise));
+            }
+        }
+        ctx.putImageData(img, 0, 0);
+        const tex = new THREE.CanvasTexture(cv);
+        tex.minFilter = THREE.LinearFilter;
+        return tex;
+    }
+
+    function createCMonster() {
+        const tex = createWallHuggerTexture();
+        const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 1.0, depthWrite: false });
+        monsterSprite = new THREE.Sprite(mat);
+        monsterSprite.scale.set(2.5, 2.5, 1);
+        monsterSprite.position.copy(EXPLOSION_CENTER);
+        monsterSprite.visible = false;
+        mapRoot.add(monsterSprite);
+    }
+
+    function createExplosionParticles() {
+        const count = 240;
+        const geo = new THREE.BufferGeometry();
+        const pos = new Float32Array(count * 3);
+        const vels = [];
+        const colors = new Float32Array(count * 3);
+        const center = EXPLOSION_CENTER;
+        for (let i = 0; i < count; i++) {
+            pos[i * 3] = center.x; pos[i * 3 + 1] = center.y; pos[i * 3 + 2] = center.z;
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 2 + Math.random() * 6;
+            const up = (Math.random() - 0.2) * 5;
+            vels.push(new THREE.Vector3(Math.cos(angle) * speed, up, Math.sin(angle) * speed));
+            colors[i * 3] = 0.6 + Math.random() * 0.4;
+            colors[i * 3 + 1] = 0.05 + Math.random() * 0.15;
+            colors[i * 3 + 2] = 0.0;
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        const mat = new THREE.PointsMaterial({
+            size: 0.18, vertexColors: true, transparent: true, opacity: 1.0,
+            blending: THREE.AdditiveBlending, depthWrite: false
+        });
+        explosionParticles = new THREE.Points(geo, mat);
+        explosionParticles.userData = { vels: vels, life: 0 };
+        mapRoot.add(explosionParticles);
+    }
+
+    function buildPhoneMesh() {
+        const group = new THREE.Group();
+        const bodyMat   = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.7, metalness: 0.3 });
+        const leatherMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.95 });
+        const screenMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const redBtnMat = new THREE.MeshStandardMaterial({ color: 0xff1111, roughness: 0.2, metalness: 0.4, emissive: 0x880000 });
+        const metalMat  = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.4, metalness: 0.8 });
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 2.6, 0.4), bodyMat); group.add(body);
+        const caseLeft = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.6, 0.5), leatherMat); caseLeft.position.set(-0.65, -0.05, 0); group.add(caseLeft);
+        const caseRight = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.6, 0.5), leatherMat); caseRight.position.set(0.65, -0.05, 0); group.add(caseRight);
+        const caseBottom = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.15, 0.5), leatherMat); caseBottom.position.set(0, -1.35, 0); group.add(caseBottom);
+        const antenna = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.04, 2.2, 16), metalMat); antenna.position.set(-0.55, 1.6, -0.15); antenna.rotation.z = -0.1; group.add(antenna);
+        const earPiece = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.45), bodyMat); earPiece.position.set(0, 1.1, 0.02); group.add(earPiece);
+        const screenFrame = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.7, 0.42), bodyMat); screenFrame.position.set(0, 0.55, 0.01); group.add(screenFrame);
+        const screenMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.65, 0.55), screenMat); screenMesh.position.set(0, 0.55, 0.23); group.add(screenMesh);
+        const screenLight = new THREE.PointLight(0xffffff, 2.0, 3); screenLight.position.set(0, 0.55, 0.8); group.add(screenLight);
+        const redBtn = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.15, 32), redBtnMat); redBtn.rotation.x = Math.PI / 2; redBtn.position.set(0, -0.6, 0.28); group.add(redBtn);
+        const btnLight = new THREE.PointLight(0xff0000, 1.0, 2); btnLight.position.set(0, -0.6, 0.6); group.add(btnLight);
+        return group;
+    }
+
+    function createCTerminal() {
+        terminalGroup = buildPhoneMesh();
+        terminalGroup.scale.set(0.12, 0.12, 0.12);
+        terminalGroup.position.copy(TERMINAL_POS);
+        terminalGroup.rotation.x = -Math.PI / 2;
+        terminalGroup.rotation.z = Math.PI / 2;
+        terminalGroup.visible = false;
+        mapRoot.add(terminalGroup);
+    }
+    function createCHandTerminal() {
+        handTerminalGroup = buildPhoneMesh();
+        handTerminalGroup.scale.set(0.08, 0.08, 0.08);
+        handTerminalGroup.position.set(-0.2, -0.25, -0.4);
+        handTerminalGroup.rotation.set(-0.2, 0.3, 0.1);
+        handTerminalGroup.visible = false;
+        cCamera.add(handTerminalGroup);
+    }
+
+    /* ---------- 结局对话（复用主游戏的 DOM） ---------- */
+    function startCDialogue(en, cn) {
+        dialogueState = 'typing';
+        currentLine = { en, cn };
+        typeIndex = 0; typeTimer = 0;
+        dialogEl.classList.add('show');
+        dlgEn.textContent = ''; dlgCn.textContent = '';
+        dlgCn.classList.remove('show'); dlgHint.classList.remove('show');
+        dlgEn.innerHTML = '<span class="cursor"></span>';
+    }
+    function updateCDialogue(dt) {
+        if (dialogueState !== 'typing') return;
+        typeTimer += dt;
+        while (typeTimer >= charDelay && typeIndex < currentLine.en.length) {
+            typeTimer -= charDelay; typeIndex++; playKeySound();
+        }
+        if (typeIndex >= currentLine.en.length) {
+            dlgEn.textContent = currentLine.en;
+            dlgCn.textContent = currentLine.cn;
+            dlgCn.classList.add('show');
+            dialogueState = 'waiting';
+            setTimeout(() => { if (dialogueState === 'waiting') dlgHint.classList.add('show'); }, 400);
+        } else {
+            dlgEn.innerHTML = currentLine.en.substring(0, typeIndex) + '<span class="cursor"></span>';
+        }
+    }
+    function advanceCDialogue() {
+        if (dialogueState === 'typing') {
+            typeIndex = currentLine.en.length;
+            dlgEn.textContent = currentLine.en; dlgCn.textContent = currentLine.cn;
+            dlgCn.classList.add('show'); dialogueState = 'waiting'; dlgHint.classList.add('show');
+        } else if (dialogueState === 'waiting') {
+            dialogEl.classList.remove('show'); dialogueState = 'none';
+            cOnDialogueComplete();
+        }
+    }
+    function cOnDialogueComplete() {
+        if (cState === 'wait1') {
+            cSetState('peek');
+            cBreathIntensity = 0.6;
+            cStartCamAnim({ x: -0.3, z: 17.2, pitch: -25 * DEG }, 1.5, () => {
+                setTimeout(() => {
+                    if (cState !== 'peek') return;
+                    cSetState('peek_back');
+                    cStartCamAnim({ x: 0.00, z: 16.5, pitch: -1.4 * DEG }, 1.5, () => {
+                        cBreathIntensity = 1.0;
+                        cSetState('wait2');
+                        startCDialogue("What is this thing?", "（这是什么东西？）");
+                    });
+                }, 800);
+            });
+        } else if (cState === 'wait2') {
+            cSetState('walk');
+            cBreathIntensity = 0.85;
+            cStartCamAnim({ x: -0.3, z: 17.6, pitch: -35 * DEG }, 2.5, () => {
+                cSetState('wait3');
+                startCDialogue("Maybe I can try pressing it", "（或许我可以尝试按动一下）");
+            });
+        } else if (cState === 'wait3') {
+            cSetState('take');
+            terminalGroup.visible = false;
+            handTerminalGroup.visible = true;
+            playFootstep();
+            setTimeout(() => { cSetState('fadeOut'); }, 3000);
+        }
+    }
+
+    function cSetState(s) { cState = s; cStateTime = 0; }
+    function cUpdateStateMachine(dt) {
+        switch (cState) {
+            case 'explode':
+                if (cStateTime > 0.05 && !explosionStarted) {
+                    explosionStarted = true;
+                    monsterSprite.visible = true;
+                    monsterSprite.material.opacity = 1.0;
+                    createExplosionParticles();
+                    playExplosionSound();
+                    cCamShake = 0.35;
+                }
+                if (cStateTime > 0.35 && monsterSprite.material.opacity > 0) {
+                    monsterSprite.material.opacity = Math.max(0, 1 - (cStateTime - 0.35) / 0.9);
+                }
+                if (cStateTime > 1.2 && !terminalGroup.visible) {
+                    terminalGroup.visible = true;
+                    terminalGroup.scale.set(0, 0, 0);
+                }
+                if (cStateTime > 2.6) {
+                    cBreathIntensity = 1.4;
+                    cSetState('wait1');
+                    startCDialogue("He seems to have exploded, let me take a break", "（他貌似爆炸了，让我缓一缓）");
+                }
+                break;
+            case 'fadeOut':
+                postUniforms.uFade.value = Math.max(0, 1 - cStateTime / 2.2);
+                if (cStateTime >= 2.2) {
+                    cSetState('done');
+                    switchToRoom();
+                }
+                break;
+        }
+    }
+    function cStartCamAnim(to, duration, onComplete) {
+        cCamAnim = {
+            from: { x: camBase.x, y: camBase.y, z: camBase.z, yaw: camBase.yaw, pitch: camBase.pitch },
+            to: to, duration: duration, t: 0, onComplete: onComplete
+        };
+    }
+    function cUpdateCamAnim(dt) {
+        if (!cCamAnim) return;
+        cCamAnim.t += dt;
+        const u = Math.min(1, cCamAnim.t / cCamAnim.duration);
+        const e = easeInOut(u);
+        camBase.x = lerp(cCamAnim.from.x, cCamAnim.to.x !== undefined ? cCamAnim.to.x : cCamAnim.from.x, e);
+        camBase.y = lerp(cCamAnim.from.y, cCamAnim.to.y !== undefined ? cCamAnim.to.y : cCamAnim.from.y, e);
+        camBase.z = lerp(cCamAnim.from.z, cCamAnim.to.z !== undefined ? cCamAnim.to.z : cCamAnim.from.z, e);
+        camBase.yaw = lerp(cCamAnim.from.yaw, cCamAnim.to.yaw !== undefined ? cCamAnim.to.yaw : cCamAnim.from.yaw, e);
+        camBase.pitch = lerp(cCamAnim.from.pitch, cCamAnim.to.pitch !== undefined ? cCamAnim.to.pitch : cCamAnim.from.pitch, e);
+        if (u >= 1) {
+            const cb = cCamAnim.onComplete;
+            cCamAnim = null;
+            if (cb) cb();
+        }
+    }
+    function cUpdateMonster() {
+        if (monsterSprite && monsterSprite.visible) {
+            monsterSprite.position.y = EXPLOSION_CENTER.y + Math.sin(cClockTime * 1.5) * 0.03;
+        }
+    }
+    function cUpdateTerminal(dt) {
+        if (terminalGroup && terminalGroup.visible) {
+            const s = terminalGroup.scale.x;
+            if (s < 0.12) terminalGroup.scale.setScalar(Math.min(0.12, s + dt * 0.4));
+        }
+    }
+    function cUpdateExplosion(dt) {
+        if (!explosionParticles) return;
+        const posAttr = explosionParticles.geometry.attributes.position;
+        const vels = explosionParticles.userData.vels;
+        for (let i = 0; i < vels.length; i++) {
+            vels[i].y -= 9.8 * dt;
+            posAttr.array[i * 3]     += vels[i].x * dt;
+            posAttr.array[i * 3 + 1] += vels[i].y * dt;
+            posAttr.array[i * 3 + 2] += vels[i].z * dt;
+        }
+        posAttr.needsUpdate = true;
+        explosionParticles.userData.life += dt;
+        explosionParticles.material.opacity = Math.max(0, 1 - explosionParticles.userData.life / 2.2);
+        if (explosionParticles.userData.life > 2.5) {
+            mapRoot.remove(explosionParticles);
+            explosionParticles = null;
+        }
+    }
+    function cUpdateAudio(dt) {
+        if (cState === 'explode' || cState === 'wait1' || cState === 'peek' || cState === 'peek_back' || cState === 'wait2' || cState === 'wait3') {
+            breathTimer -= dt;
+            if (breathTimer <= 0) { playBreath(); breathTimer = 2.0 + Math.random() * 1.5; }
+        }
+        if (cState === 'walk') {
+            footTimer -= dt;
+            if (footTimer <= 0) { playFootstep(); footTimer = 0.45 + Math.random() * 0.15; }
+        }
+    }
+    function cApplyCamera(dt) {
+        const breatheX = Math.sin(cClockTime * 11) * 0.008 * cBreathIntensity;
+        const breatheY = Math.cos(cClockTime * 8)  * 0.012 * cBreathIntensity;
+        let shakeX = 0, shakeY = 0;
+        if (cCamShake > 0.001) {
+            shakeX = (Math.random() - 0.5) * cCamShake;
+            shakeY = (Math.random() - 0.5) * cCamShake;
+            cCamShake *= Math.pow(0.02, dt);
+        }
+        cCamera.position.set(camBase.x + breatheX + shakeX, camBase.y + breatheY + shakeY, camBase.z);
+        cCamera.rotation.set(camBase.pitch + breatheY * 0.4, camBase.yaw + breatheX * 0.4, breatheX * 0.15);
+    }
+    function cUpdate(dt) {
+        cClockTime += dt;
+        cStateTime += dt;
+        cUpdateStateMachine(dt);
+        cUpdateCamAnim(dt);
+        cUpdateMonster();
+        cUpdateTerminal(dt);
+        cUpdateExplosion(dt);
+        cUpdateAudio(dt);
+        updateCDialogue(dt);
+        cApplyCamera(dt);
+    }
+
+    /* ---------- 房间 ---------- */
+    function rInit() {
+        hemiLight = new THREE.HemisphereLight(0xffffff, 0x404040, 0.55);
+        rScene.add(hemiLight);
+        roomAmbient = new THREE.AmbientLight(0xffffff, 0.34);
+        rScene.add(roomAmbient);
+
+        function createCeilingLamp(x, z) {
+            const shell = new THREE.Mesh(
+                new THREE.BoxGeometry(2.2, 0.08, 0.45),
+                new THREE.MeshStandardMaterial({ color: 0xf6f6f4, roughness: 0.6 })
+            );
+            shell.position.set(x, 3.42, z); rScene.add(shell);
+            const tube = new THREE.Mesh(
+                new THREE.BoxGeometry(2.0, 0.02, 0.22),
+                new THREE.MeshStandardMaterial({ color: 0xffffee, emissive: 0xffffee, emissiveIntensity: 1.15 })
+            );
+            tube.position.set(x, 3.37, z); rScene.add(tube);
+            const light = new THREE.PointLight(0xfffff0, 0.85, 16);
+            light.position.set(x, 3.22, z); rScene.add(light);
+            return { tube, light };
+        }
+        lampA = createCeilingLamp(-3, -2);
+        lampB = createCeilingLamp( 3, -2);
+
+        const roomWidth = 12, roomLength = 14, roomHeight = 3.5;
+        const wallMat     = new THREE.MeshStandardMaterial({ color: 0xd8d2c8, roughness: 0.94 });
+        const floorMat    = new THREE.MeshStandardMaterial({ color: 0x8c8880, roughness: 0.92 });
+        const ceilMat     = new THREE.MeshStandardMaterial({ color: 0xe8e6e2, roughness: 0.92 });
+        const doorMat     = new THREE.MeshStandardMaterial({ color: 0x6b4c3a, roughness: 0.75 });
+        const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x9a9a9a, roughness: 0.85 });
+        const knobMat     = new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.9, roughness: 0.2 });
+
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomLength), floorMat);
+        floor.rotation.x = -Math.PI / 2; rScene.add(floor);
+        const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomLength), ceilMat);
+        ceiling.rotation.x = Math.PI / 2; ceiling.position.y = roomHeight; rScene.add(ceiling);
+
+        const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.2, roomHeight, roomLength), wallMat);
+        leftWall.position.set(-roomWidth / 2, roomHeight / 2, 0); rScene.add(leftWall);
+        const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.2, roomHeight, roomLength), wallMat);
+        rightWall.position.set(roomWidth / 2, roomHeight / 2, 0); rScene.add(rightWall);
+        const backWall = new THREE.Mesh(new THREE.BoxGeometry(roomWidth, roomHeight, 0.2), wallMat);
+        backWall.position.set(0, roomHeight / 2, -roomLength / 2); rScene.add(backWall);
+
+        const doorWidth = 1.4, doorHeight = 2.4, frontWallZ = roomLength / 2;
+        const fwLeft = new THREE.Mesh(new THREE.BoxGeometry((roomWidth - doorWidth) / 2, roomHeight, 0.2), wallMat);
+        fwLeft.position.set(-(doorWidth / 2 + (roomWidth - doorWidth) / 4), roomHeight / 2, frontWallZ); rScene.add(fwLeft);
+        const fwRight = new THREE.Mesh(new THREE.BoxGeometry((roomWidth - doorWidth) / 2, roomHeight, 0.2), wallMat);
+        fwRight.position.set(doorWidth / 2 + (roomWidth - doorWidth) / 4, roomHeight / 2, frontWallZ); rScene.add(fwRight);
+        const fwTop = new THREE.Mesh(new THREE.BoxGeometry(doorWidth, roomHeight - doorHeight, 0.2), wallMat);
+        fwTop.position.set(0, doorHeight + (roomHeight - doorHeight) / 2, frontWallZ); rScene.add(fwTop);
+
+        const frameLeft = new THREE.Mesh(new THREE.BoxGeometry(0.1, doorHeight, 0.3), doorFrameMat);
+        frameLeft.position.set(-doorWidth / 2 - 0.05, doorHeight / 2, frontWallZ); rScene.add(frameLeft);
+        const frameRight = new THREE.Mesh(new THREE.BoxGeometry(0.1, doorHeight, 0.3), doorFrameMat);
+        frameRight.position.set(doorWidth / 2 + 0.05, doorHeight / 2, frontWallZ); rScene.add(frameRight);
+        const frameTop = new THREE.Mesh(new THREE.BoxGeometry(doorWidth + 0.2, 0.1, 0.3), doorFrameMat);
+        frameTop.position.set(0, doorHeight + 0.05, frontWallZ); rScene.add(frameTop);
+
+        doorGroup = new THREE.Group();
+        const door = new THREE.Mesh(new THREE.BoxGeometry(doorWidth, doorHeight, 0.1), doorMat);
+        door.position.set(doorWidth / 2, doorHeight / 2, 0);
+        doorGroup.add(door);
+        const knob = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), knobMat);
+        knob.position.set(doorWidth - 0.16, doorHeight / 2, 0.08);
+        doorGroup.add(knob);
+        doorGroup.position.set(-doorWidth / 2, 0, frontWallZ);
+        doorGroup.rotation.y = 0.055;
+        rScene.add(doorGroup);
+
+        const tableMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.72 });
+        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.12, 2.8), tableMat);
+        tableTop.position.set(0, 0.80, 0); rScene.add(tableTop);
+        const legGeo = new THREE.BoxGeometry(0.22, 0.74, 0.22);
+        const legMat = new THREE.MeshStandardMaterial({ color: 0x555555 });
+        [[-2.8, -1.2], [2.8, -1.2], [-2.8, 1.2], [2.8, 1.2]].forEach(p => {
+            const l = new THREE.Mesh(legGeo, legMat);
+            l.position.set(p[0], 0.37, p[1]); rScene.add(l);
+        });
+
+        const pcBase = new THREE.Mesh(
+            new THREE.BoxGeometry(1.4, 0.25, 0.6),
+            new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.85 })
+        );
+        pcBase.position.set(0, 0.98, 0); rScene.add(pcBase);
+        const stand = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.7, 0.12), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+        stand.position.set(0, 1.45, 0.22); rScene.add(stand);
+        const screenFrame = new THREE.Mesh(
+            new THREE.BoxGeometry(1.3, 0.85, 0.08),
+            new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7 })
+        );
+        screenFrame.position.set(0, 1.65, 0.48); rScene.add(screenFrame);
+
+        screenObj = new THREE.Mesh(
+            new THREE.PlaneGeometry(1.15, 0.72),
+            new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xbfd8ff, emissiveIntensity: 0.55 })
+        );
+        screenObj.position.set(0, 1.65, 0.53); rScene.add(screenObj);
+
+        screenGlow = new THREE.PointLight(0x88aaff, 0.45, 6);
+        screenGlow.position.set(0, 1.65, 0.9); rScene.add(screenGlow);
+
+        function spawnDevice(x, z, onTable) {
+            const sx = 0.15 + Math.random() * 0.35;
+            const sy = 0.1 + Math.random() * 0.35;
+            const sz = 0.15 + Math.random() * 0.35;
+            const mesh = new THREE.Mesh(
+                new THREE.BoxGeometry(sx, sy, sz),
+                new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.75, metalness: 0.1 })
+            );
+            mesh.position.set(x, onTable ? 0.86 + sy * 0.5 : sy * 0.5, z);
+            mesh.rotation.y = Math.random() * 0.4 - 0.2;
+            rScene.add(mesh);
+        }
+        spawnDevice(-2.0,  0.6, true);
+        spawnDevice(-1.4, -0.4, true);
+        spawnDevice( 1.9,  0.4, true);
+        spawnDevice( 1.3, -0.5, true);
+        spawnDevice(-3.0, -1.5, false);
+        spawnDevice(-2.7,  1.0, false);
+        spawnDevice( 3.1, -1.3, false);
+        spawnDevice( 2.6,  0.9, false);
+
+        function spawnBox(x, z, w, h, d, rot) {
+            const box = new THREE.Mesh(
+                new THREE.BoxGeometry(w, h, d),
+                new THREE.MeshStandardMaterial({ color: 0x9a8456, roughness: 0.9 })
+            );
+            box.position.set(x, h / 2, z);
+            box.rotation.y = rot;
+            rScene.add(box);
+        }
+        spawnBox(-5.0, -6.0, 1.0, 0.8, 1.0,  0.2);
+        spawnBox(-5.1, -5.5, 0.8, 1.2, 0.8, -0.1);
+        spawnBox(-4.8, -5.8, 0.7, 0.6, 0.7,  0.5);
+
+        const cabinet = new THREE.Mesh(
+            new THREE.BoxGeometry(1.2, 2.0, 1.0),
+            new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.8 })
+        );
+        cabinet.position.set(5.0, 1.0, 5.5); rScene.add(cabinet);
+
+        person = new THREE.Group();
+        const clothMat = new THREE.MeshStandardMaterial({ color: 0x3a4a5a, roughness: 0.95 });
+        const skinMat  = new THREE.MeshStandardMaterial({ color: 0x8a6a55, roughness: 0.85 });
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 14, 14), skinMat);
+        head.position.y = 1.76; person.add(head);
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.78, 0.28), clothMat);
+        torso.position.y = 1.20; person.add(torso);
+        const armL = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.62, 0.14), clothMat);
+        armL.position.set(-0.30, 1.22, 0); person.add(armL);
+        const armR = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.62, 0.14), clothMat);
+        armR.position.set(0.30, 1.22, 0); person.add(armR);
+        const legL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.80, 0.18), clothMat);
+        legL.position.set(-0.14, 0.40, 0); person.add(legL);
+        const legR = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.80, 0.18), clothMat);
+        legR.position.set(0.14, 0.40, 0); person.add(legR);
+        person.position.set(-0.85, 0, 2.0);
+        person.rotation.y = Math.PI;
+        person.visible = false;
+        rScene.add(person);
+
+        fogGroup = new THREE.Group();
+        for (let i = 0; i < 42; i++) {
+            const m = new THREE.Mesh(
+                new THREE.SphereGeometry(0.18 + Math.random() * 0.5, 8, 8),
+                new THREE.MeshStandardMaterial({ color: 0x000000, transparent: true, opacity: 0.0, roughness: 1.0 })
+            );
+            m.position.set(
+                (Math.random() - 0.5) * 2.6,
+                Math.random() * 2.3,
+                frontWallZ - 0.5 + (Math.random() - 0.5) * 1.4
+            );
+            m.userData.spd = 0.05 + Math.random() * 0.14;
+            fogGroup.add(m);
+        }
+        rScene.add(fogGroup);
+
+        rCamera.position.copy(POS_START);
+        rCamera.quaternion.copy(quatLookAt(rCamera.position, LOOK_SCREEN));
+    }
+
+    function quatLookAt(pos, target) {
+        _m4.lookAt(pos, target, _up);
+        return new THREE.Quaternion().setFromRotationMatrix(_m4);
+    }
+    function shakeVec(t, amp) {
+        return new THREE.Vector3(
+            (Math.sin(t * 1.70) * 0.60 + Math.sin(t * 3.10 + 1.3) * 0.40) * amp,
+            (Math.sin(t * 2.30 + 1.1) * 0.60 + Math.sin(t * 4.70) * 0.40) * amp,
+            (Math.sin(t * 1.30 + 2.2) * 0.60 + Math.sin(t * 3.70) * 0.40) * amp
+        );
+    }
+    function getCamPos(T) {
+        if (T <= T_MOVE_START) return POS_START.clone();
+        const k = sstep(T_MOVE_START, T_MOVE_END, T);
+        const p = POS_START.clone().lerp(POS_DESK, k);
+        p.y += Math.sin(k * Math.PI) * 0.16;
+        p.x += Math.sin(k * Math.PI) * 0.10;
+        return p;
+    }
+    function getLookAt(T) {
+        if (T <= T_LOOK_START) return LOOK_SCREEN.clone();
+        if (T <= T_LOOK_END) {
+            const k = sstep(T_LOOK_START, T_LOOK_END, T);
+            return LOOK_SCREEN.clone().lerp(LOOK_DOOR, k);
+        }
+        if (T <= T_MOVE_START) return LOOK_DOOR.clone();
+        const k = sstep(T_MOVE_START, T_MOVE_END, T);
+        return LOOK_DOOR.clone().lerp(LOOK_DESK, k);
+    }
+    function getShakeAmp(T) {
+        if (T < T_LOOK_START) return lerp(0.055, 0.014, sstep(0, T_WAKE_END, T));
+        if (T < T_MOVE_START) return 0.017;
+        if (T < T_WALK_START) return 0.013;
+        if (T < T_FOG_START)  return 0.006;
+        return 0.011;
+    }
+    function getBlink(T) {
+        if (T < 0.55) return 1.0;
+        if (T < 0.95) return lerp(1.0, 0.18, sstep(0.55, 0.95, T));
+        if (T < 1.45) return 0.18;
+        if (T < 2.05) return lerp(0.18, 0.72, sstep(1.45, 2.05, T));
+        if (T < 2.90) return lerp(0.72, 0.00, sstep(2.05, 2.90, T));
+        const cyc = (T - 3.4) % 3.6;
+        if (T > 3.4 && cyc < 0.16) return Math.sin(cyc / 0.16 * Math.PI);
+        return 0.0;
+    }
+
+    function rStart() {
+        rT = 0;
+        roomRunning = true;
+        knockTimer = 0;
+        doorSoundPlayed = false;
+        startRoomAmbient();
+    }
+
+    function rUpdate(dt) {
+        if (!roomRunning) return;
+        rT += dt;
+        const basePos = getCamPos(rT);
+        const look = getLookAt(rT);
+        const amp = getShakeAmp(rT);
+        rCamera.position.copy(basePos).add(shakeVec(rT, amp));
+        const baseQ = quatLookAt(rCamera.position, look);
+        const rollK = sstep(T_MOVE_START + 1.0, T_MOVE_END, rT);
+        _qRoll.setFromAxisAngle(_zAxis, -0.10 * rollK);
+        baseQ.multiply(_qRoll);
+        rCamera.quaternion.slerp(baseQ, 1 - Math.pow(0.001, dt));
+
+        if (rT < T_MOVE_END - 0.5) {
+            postUniforms.uBlink.value = getBlink(rT);
+        } else {
+            postUniforms.uBlink.value = 0.0;
+        }
+        postUniforms.uBlur.value = 3.0 * (1 - sstep(0.0, 4.5, rT)) + 0.45 + 0.35;
+
+        if (rT > T_LOOK_START && rT < T_WALK_START) {
+            knockTimer -= dt;
+            if (knockTimer <= 0) {
+                const prog = sstep(T_LOOK_START, T_LOOK_START + 3.5, rT);
+                playKnock(0.35 + prog * 0.75);
+                knockTimer = 1.55 - prog * 0.55;
+            }
+        }
+        if (rT > T_MOVE_START - 1.0) person.visible = true;
+        const walkK = sstep(T_WALK_START, T_WALK_END, rT);
+        person.position.z = lerp(2.0, 5.55, walkK);
+        person.position.x = lerp(-0.85, 0.0, walkK);
+        const turnK = sstep(T_WALK_START, T_WALK_START + 1.1, rT);
+        person.rotation.y = lerp(Math.PI, 0, turnK);
+        if (walkK > 0.02 && walkK < 0.995) {
+            person.position.y = Math.abs(Math.sin(rT * 7.5)) * 0.035;
+        } else {
+            person.position.y = lerp(person.position.y, 0, 0.15);
+        }
+
+        if (rT > T_DOOR_START) {
+            if (!doorSoundPlayed) { playDoorCreak(); doorSoundPlayed = true; }
+            const dk = sstep(T_DOOR_START, T_DOOR_END, rT);
+            doorGroup.rotation.y = lerp(0.055, 0.62, dk);
+        }
+        if (rT > T_FOG_START) {
+            const fk = sstep(T_FOG_START, T_FOG_END, rT);
+            fogGroup.children.forEach(child => {
+                const target = 0.85 * fk;
+                child.material.opacity += (target - child.material.opacity) * Math.min(1, dt * 1.5);
+                child.position.y += dt * child.userData.spd * 0.5;
+            });
+        }
+        if (rT > T_FOG_START) {
+            const dk = sstep(T_FOG_START, T_BLACK_START, rT);
+            const f = 1 - dk;
+            roomAmbient.intensity = 0.34 * f;
+            hemiLight.intensity = 0.55 * f;
+            lampA.light.intensity = 0.85 * f;
+            lampB.light.intensity = 0.85 * f;
+            screenGlow.intensity = 0.45 * f;
+            screenObj.material.emissiveIntensity = 0.55 * f;
+        }
+        if (rT > T_BLACK_START) {
+            const bk = sstep(T_BLACK_START, T_BLACK_END, rT);
+            postUniforms.uFade.value = 1 - bk;
+            postUniforms.uExposure.value = 1.10 + Math.sin(bk * Math.PI) * 0.55;
+        }
+        if (rT >= T_BLACK_END) {
+            /* 结束 → 显示返回提示 */
+            roomRunning = false;
+            phase = 'finished';
+            document.getElementById('ending-hint').classList.add('show');
+        }
+    }
+
+    /* ---------- 切换 / 对外 ---------- */
+    function switchToRoom() {
+        phase = 'room';
+        dialogEl.classList.remove('show');
+        dlgHint.classList.remove('show');
+        postUniforms.uFade.value = 1.0;   
+        rStart();
+    }
+
+    function begin() {
+        phase = 'corridor';
+        corridorDone = false;
+        cState = 'explode';
+        cStateTime = 0;
+        explosionStarted = false;
+        cClockTime = 0;
+        cCamShake = 0;
+        cBreathIntensity = 1.0;
+        camBase.x = 0.00; camBase.y = 0.90; camBase.z = 16.50;
+        camBase.yaw = 163.3 * DEG; camBase.pitch = -1.4 * DEG;
+        breathTimer = 0; footTimer = 0;
+        dialogueState = 'none';
+        cCamera.position.set(camBase.x, camBase.y, camBase.z);
+        cCamera.rotation.set(camBase.pitch, camBase.yaw, 0);
+    }
+
+    function update(dt) {
+        if (phase === 'corridor') cUpdate(dt);
+        else if (phase === 'room') rUpdate(dt);
+    }
+
+    function advance() {
+        if (phase === 'finished') {
+            returnToMenu();
+            return;
+        }
+        if (phase !== 'corridor') return;
+        if (dialogueState !== 'none') advanceCDialogue();
+    }
+
+    function onResize() {
+        cCamera.aspect = innerWidth / innerHeight;
+        cCamera.updateProjectionMatrix();
+        rCamera.aspect = innerWidth / innerHeight;
+        rCamera.updateProjectionMatrix();
+    }
+
+    function getScene() { return phase === 'room' ? rScene : cScene; }
+    function getCamera() { return phase === 'room' ? rCamera : cCamera; }
+
+    return { init: function () { cInit(); rInit(); }, begin, update, advance, onResize, getScene, getCamera };
+})();
+
+/* ================================================================
+   三十、主循环
+   ================================================================ */
+function updateMenu(dt) {
+    currentZ -= 0.5 * dt;
+    camera.position.set(
+        Math.sin(clockTime * 0.4) * 0.01,
+        CFG.eyeHeight + Math.sin(clockTime * 0.8) * 0.015,
+        currentZ
+    );
+    camera.rotation.set(
+        Math.sin(clockTime * 0.3) * 0.015,
+        Math.sin(clockTime * 0.2) * 0.03,
+        Math.sin(clockTime * 0.5) * 0.01
+    );
+    updateChunks();
+}
+
+function updateIntro(dt) {
+    if (introPhase === 'typing') updateTyping(dt);
+    if (camAnim) { if (updateCameraAnim(dt)) runStep(); }
+    if (actionState) { if (updateAction(dt)) runStep(); }
+    if (!inCorridor && !camAnim && !actionState) {
+        camera.position.y = 1.6 + Math.sin(clockTime * 0.8) * 0.012;
+    }
+    if (inCorridor) updateChunks();
+}
+
+function updatePlaying(dt) {
+    gamePlayTime += dt;
+
+    let moving = false;
+    if (stamina <= 0) isExhausted = true;
+    if (isExhausted && stamina >= CFG.staminaMax * 0.3) isExhausted = false;
+
+    const wantToRun = isMovingForward && isRunInput;
+    const canRun = wantToRun && !isExhausted && stamina > 0;
+
+    if (canRun) {
+        stamina -= CFG.staminaCost * dt;
+        if (stamina < 0) stamina = 0;
+    } else {
+        const rate = (isMovingForward || isMovingBackward) ? CFG.staminaRecoverWalk : CFG.staminaRecoverIdle;
+        stamina += rate * dt;
+        if (stamina > CFG.staminaMax) stamina = CFG.staminaMax;
+    }
+    updateStaminaUI();
+    savedStamina = stamina;
+
+    let speedMul = getLookSpeedMul();
+    if (canRun) speedMul *= CFG.runSpeedMul;
+    if (isMovingForward)  { currentZ -= CFG.speed * speedMul * dt; moving = true; }
+    if (isMovingBackward) { currentZ += CFG.speed * speedMul * dt; moving = true; }
+
+    camera.position.z = currentZ;
+    const baseY = CFG.eyeHeight;
+    let rollTarget;
+
+    if (moving) {
+        walkTime += dt * 9 * (speedMul < 1 ? 0.5 + speedMul * 0.5 : 1);
+        const s = CFG.shake;
+        camera.position.y = baseY + Math.sin(walkTime) * s;
+        camera.position.x = Math.sin(walkTime * 0.5) * s * 0.5;
+        rollTarget = Math.cos(walkTime * 0.5) * s * 0.6;
+    } else {
+        const k = 1 - Math.pow(0.0005, dt);
+        camera.position.y += (baseY - camera.position.y) * k;
+        camera.position.x += (0 - camera.position.x) * k;
+        rollTarget = 0;
+    }
+    roll += (rollTarget - roll) * (1 - Math.exp(-10 * dt));
+
+    const lk = 1 - Math.exp(-CFG.lookSpeed * dt);
+    lookYaw += (targetYaw - lookYaw) * lk;
+    lookPitch += (targetPitch - lookPitch) * lk;
+    updateLookState(dt);
+    camera.rotation.set(lookPitch, lookYaw, roll);
+
+    if (CFG.threatDecay > 0 && gamePlayTime % 5 < dt) {
+        threatValue = Math.max(0, threatValue - CFG.threatDecay);
+        updateThreatUI(threatValue);
+    }
+
+    /* 三个独立计时器 */
+    if (gamePlayTime > 5) {
+        if (!frontMonster) {
+            frontSpawnTimer -= dt;
+            if (frontSpawnTimer <= 0) {
+                createMonster(true);
+                frontSpawnTimer = CFG.monsterSpawnMin + Math.random() * (CFG.monsterSpawnMax - CFG.monsterSpawnMin);
+            }
+        }
+        if (!backMonster) {
+            backSpawnTimer -= dt;
+            if (backSpawnTimer <= 0) {
+                createMonster(false);
+                backSpawnTimer = CFG.monsterSpawnMin + Math.random() * (CFG.monsterSpawnMax - CFG.monsterSpawnMin);
+            }
+        }
+        dropTimer -= dt;
+if (dropTimer <= 0) {
+    dropTimer = CFG.monsterSpawnMin + Math.random() * (CFG.monsterSpawnMax - CFG.monsterSpawnMin);
+    if (Math.random() < CFG.bulletChance) spawnDrop('bullet');
+}
+
+potionDropTimer -= dt;
+if (potionDropTimer <= 0) {
+    potionDropTimer = 45;
+    spawnDrop('potion');
+}
+}
+
+    updateMonsters(dt);
+    updateDrops(dt);
+
+    let danger = false;
+    if (frontMonster && frontMonster.retreatTimer <= 0 && frontMonster.spawnGrace <= 0 && frontMonster.dist <= CFG.warnDist) danger = true;
+    if (backMonster && backMonster.retreatTimer <= 0 && backMonster.spawnGrace <= 0 && backMonster.dist <= CFG.warnDist) danger = true;
+    triggerWarning(danger);
+
+    updateWeaponAnim(dt);
+
+    if (camShake > 0) {
+        camera.position.x += (Math.random() - 0.5) * camShake;
+        camera.position.y += (Math.random() - 0.5) * camShake;
+        camShake -= dt * 2;
+        if (camShake < 0) camShake = 0;
+    }
+
+    updateChunks();
+}
+
+function renderFrame() {
+    let sc = scene, ca = camera;
+    if (gameState === 'ending') {
+        sc = Ending.getScene();
+        ca = Ending.getCamera();
+    }
+    renderer.setRenderTarget(rt);
+    renderer.render(sc, ca);
+    renderer.setRenderTarget(null);
+    postUniforms.tDiffuse.value = rt.texture;
+    postUniforms.uTime.value = clockTime;
+    renderer.render(postScene, postCamera);
+}
+
+function animate(now) {
+    requestAnimationFrame(animate);
+    if (!lastTime) lastTime = now;
+    let dt = (now - lastTime) / 1000;
+    lastTime = now;
+    if (dt > 0.1) dt = 0.1;
+    clockTime += dt;
+
+    if (gameState === 'menu') updateMenu(dt);
+    else if (gameState === 'intro') updateIntro(dt);
+    else if (gameState === 'playing') updatePlaying(dt);
+    else if (gameState === 'ending') Ending.update(dt);
+
+    renderFrame();
+}
+
+/* ================================================================
+   三十一、resize
+   ================================================================ */
+function onResize() {
+    const w = window.innerWidth, h = window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+    rt.setSize(w, h);
+    postUniforms.uResolution.value.set(w, h);
+    if (typeof Ending !== 'undefined') Ending.onResize();
+}
+
+/* 启动 */
+init();
+
+})();
+</script>
+</body>
+</html>
+
+<script>
+
+</script>
+</body>
+</html>
